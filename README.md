@@ -18,5 +18,7 @@ Developer material (Blender sources, chat backend, character source modules, not
 and is not part of the site.
 
 ## Deploy (GitHub Pages)
+The loading screen waits for both paper characters to decode and paint their first frame, as well as the page and fonts. It does not dismiss itself on a timer. If a character fails, its fallback image must decode before the page opens. Canvas resizes repaint one frame even below the viewport so section 2 cannot become blank after layout changes.
+
 Publish the contents of this folder. Before publishing: set an absolute URL for `og:image` in both HTML files, and make sure
 the BinBuddy demo (`demo:` in `data/content.js`) points at a folder that is published too.

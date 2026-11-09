@@ -133,24 +133,53 @@
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 
-  /* ---------- loading screen: waits for fonts + page + the 3D hero (max 9 s), then plays the intro ---------- */
+  /* ---------- loading screen: reveal only after every character has pixels ---------- */
   function loader() {
     var el = $("#loader"), fill = $("#ld-fill"), root = document.documentElement;
     if (!el) { root.classList.remove("loading"); root.classList.add("ready"); return; }
-    // the page is shown only when BOTH paper characters (standing + seated) are decoded and drawn (or failed), so they never pop in late
-    var chars = function () { var a = window.__paperAvatars || {}, ok = function (k) { return a[k] && (a[k].status === "ready" || a[k].status === "failed"); }; return ok("standing") && ok("seated"); };
-    var st = { fonts: 0, load: document.readyState === "complete" ? 1 : 0, model: chars() ? 1 : 0 }, done = false, shown = 5;
+    var canvases = $$("canvas[data-paper-avatar]"), fallbacks = new WeakMap();
+    var st = { fonts: 0, load: document.readyState === "complete" ? 1 : 0, model: 0 }, done = false, shown = 5, poll, tick;
+    function fallbackReady(canvas) {
+      var state = fallbacks.get(canvas); if (state) return state === "ready";
+      var card = canvas.parentElement, image = $(".paper-avatar-fallback", card);
+      fallbacks.set(canvas, "loading");
+      if (!image) { failed(canvas); return false; }
+      card.classList.add("no3d"); card.classList.remove("is3d", "is-paper-avatar");
+      image.loading = "eager";
+      var decoded = image.decode ? image.decode() : new Promise(function (resolve, reject) {
+        if (image.complete) { image.naturalWidth ? resolve() : reject(); return; }
+        image.addEventListener("load", resolve, { once: true }); image.addEventListener("error", reject, { once: true });
+      });
+      decoded.catch(function (error) { if (!image.complete || !image.naturalWidth) throw error; }).then(function () {
+        if (!image.naturalWidth) throw new Error("Empty character fallback");
+        fallbacks.set(canvas, "ready"); check();
+      }).catch(function () { failed(canvas); });
+      return false;
+    }
+    function failed(canvas) {
+      fallbacks.set(canvas, "failed");
+      var label = $(".ld-card b", el); if (label) label.textContent = "โหลดตัวละครไม่สำเร็จ กรุณารีเฟรชหน้า";
+    }
+    function chars() {
+      var a = window.__paperAvatars || {};
+      return canvases.map(function (canvas) {
+        var state = a[canvas.dataset.paperAvatar];
+        if (state && state.status === "ready") return true;
+        if ((state && state.status === "failed") || (st.load && !window.paperAvatars)) return fallbackReady(canvas);
+        return false;
+      }).every(Boolean);
+    }
     function target() { return 15 + st.fonts * 25 + st.load * 25 + st.model * 35; }
     function finish() {
-      if (done) return; done = true; clearInterval(tick); fill.style.width = "100%";
+      if (done) return; done = true; clearInterval(tick); clearInterval(poll); removeEventListener("paper-avatar:status", check); fill.style.width = "100%";
       setTimeout(function () { el.classList.add("out"); root.classList.remove("loading"); root.classList.add("ready"); setTimeout(function () { el.remove(); }, 900); }, 280);
     }
-    function check() { if (st.fonts && st.load && st.model) finish(); }
+    function check() { if (done) return; st.model = chars() ? 1 : 0; if (st.fonts && st.load && st.model) finish(); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { st.fonts = 1; check(); }); else st.fonts = 1;
     if (!st.load) addEventListener("load", function () { st.load = 1; check(); });
-    if (!st.model) { var poll = setInterval(function () { if (chars()) { st.model = 1; clearInterval(poll); check(); } }, 100); setTimeout(function () { clearInterval(poll); }, 15000); }
-    var tick = setInterval(function () { shown += (Math.min(target(), 96) - shown) * 0.12 + 0.15; fill.style.width = shown.toFixed(1) + "%"; }, 90);
-    setTimeout(finish, 14000);                                          // never keep the visitor waiting (slow connections)
+    addEventListener("paper-avatar:status", check);
+    poll = setInterval(check, 100);
+    tick = setInterval(function () { shown += (Math.min(target(), 96) - shown) * 0.12 + 0.15; fill.style.width = shown.toFixed(1) + "%"; }, 90);
     check();
   }
 

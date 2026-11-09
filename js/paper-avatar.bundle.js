@@ -1081,7 +1081,7 @@ class PaperAvatar {
   constructor(canvas, key, cfg) {
     this.canvas = canvas; this.key = key; this.cfg = cfg;
     this.card = canvas.parentElement; this.ctx = canvas.getContext("2d", { alpha: true });
-    this.reduced = motionQuery.matches; this.ready = false; this.visible = false;
+    this.reduced = motionQuery.matches; this.ready = false; this.presented = false; this.visible = false;
     this.raf = 0; this.lastFrame = 0; this.time = 0; this.animateUntil = 0;
     this.lastActive = now(); this.reaction = ""; this.reactionUntil = 0;
     this.baseMood = "neutral";
@@ -1100,14 +1100,10 @@ class PaperAvatar {
     decodeImage(cfg.src).then(async image => {
       const handImage = key === "standing" ? image : await decodeImage("assets/paper/standing-base.webp?v=37");
       this.armRig = createPaperArmRig({ textureImage: handImage, handImage });
-      this.layers = separate(image, cfg); this.ready = true; this.measure();
+      this.layers = separate(image, cfg); this.measure(); this.ready = true;
       // A pre-rendered initial frame prevents blank art during a fast scroll.
       this.face.update(1 / 60, 0, { x: 0, y: key === "seated" ? .18 : 0 });
-      this.draw(0); this.card.classList.add("is-paper-avatar", "is3d"); this.card.classList.remove("no3d");
-      window.__paperAvatars[key] = { status: "ready" };
-      if (key === "standing" || canvas.id === "hero3d") {
-        window.__hero3d = "ready"; window.dispatchEvent(new Event("hero3d:done"));
-      }
+      this.draw(0);
       initCatRun(); this.activity(); this.requestDraw(250);
     }).catch(error => this.fail(error));
   }
@@ -1115,6 +1111,7 @@ class PaperAvatar {
   fail(error) {
     this.ready = false; this.card.classList.add("no3d"); this.card.classList.remove("is-paper-avatar", "is3d");
     window.__paperAvatars[this.key] = { status: "failed", message: error.message };
+    window.dispatchEvent(new Event("paper-avatar:status"));
     if (this.key === "standing" || this.canvas.id === "hero3d") {
       window.__hero3d = "fail"; window.dispatchEvent(new Event("hero3d:done"));
     }
@@ -1145,7 +1142,12 @@ class PaperAvatar {
     const width = this.card.clientWidth, height = this.card.clientHeight; if (!width || !height) return;
     const dpr = Math.min(window.devicePixelRatio || 1, LIGHT ? 1.5 : 2); this.layout = { width, height, dpr };   // phones: fewer pixels per frame
     const cw = Math.round(width * dpr), ch = Math.round(height * dpr);
-    if (this.canvas.width !== cw || this.canvas.height !== ch) { this.canvas.width = cw; this.canvas.height = ch; }
+    if (this.canvas.width !== cw || this.canvas.height !== ch) {
+      this.canvas.width = cw; this.canvas.height = ch;
+      // Resizing clears the backing buffer, even below the viewport. Restore
+      // one frame now; the visibility gate still pauses offscreen animation.
+      if (this.ready) this.draw(now());
+    }
   }
 
   requestDraw(milliseconds = 0) {
@@ -1401,6 +1403,15 @@ class PaperAvatar {
       ctx.restore();
     }
     ctx.restore(); this.frames++;
+    if (!this.presented) {
+      this.presented = true;
+      this.card.classList.add("is-paper-avatar", "is3d"); this.card.classList.remove("no3d");
+      window.__paperAvatars[this.key] = { status: "ready" };
+      window.dispatchEvent(new Event("paper-avatar:status"));
+      if (this.key === "standing" || this.canvas.id === "hero3d") {
+        window.__hero3d = "ready"; window.dispatchEvent(new Event("hero3d:done"));
+      }
+    }
   }
 
   drawGlasses(ctx) {
@@ -1463,6 +1474,7 @@ document.querySelectorAll("canvas[data-paper-avatar]").forEach(canvas => {
   const key = canvas.dataset.paperAvatar, cfg = PAPER_AVATARS[key];
   if (!cfg || !cfg.headPath?.length || !cfg.headPivot || !cfg.face) {
     window.__paperAvatars[key] = { status: "failed", message: "Missing paper character configuration" };
+    window.dispatchEvent(new Event("paper-avatar:status"));
     if (key === "standing" || canvas.id === "hero3d") { window.__hero3d = "fail"; window.dispatchEvent(new Event("hero3d:done")); }
     return;
   }

@@ -1,0 +1,1655 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Waste Classification &amp; Recycling Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="demo.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    :root {
+      --bg: #f0f9f0;
+      --ink: #065f46;
+      --card: #ffffff;
+      --or: #10b981
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Kanit', system-ui, sans-serif;
+      line-height: 1.6
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 90px 5vw 70px
+    }
+
+    a {
+      color: var(--ink)
+    }
+
+    .wrap a:focus-visible,
+    .wrap button:focus-visible,
+    .fbtn:focus-within,
+    #cc:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 3px
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      line-height: 1.15;
+      margin: 18px 0 8px;
+      font-weight: 800
+    }
+
+    .lead {
+      margin: 0 0 16px;
+      max-width: 56ch
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 28px;
+      padding: 20px;
+      overflow: hidden
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px
+    }
+
+    .head h2 {
+      margin: 0;
+      font-size: 1.25rem
+    }
+
+    .head p {
+      margin: 0;
+      font-size: .9rem;
+      opacity: .8
+    }
+
+    .count {
+      background: #d1fae5;
+      border-radius: 999px;
+      padding: 3px 14px;
+      font-weight: 600;
+      font-size: .88rem;
+      white-space: nowrap
+    }
+
+    .count.done {
+      background: #dcfce7;
+      color: #15803d
+    }
+
+    .cwrap {
+      position: relative;
+      border-radius: 20px;
+      background: #f0fdf4
+    }
+
+    .cwrap.over {
+      outline: 4px dashed var(--or);
+      outline-offset: -8px
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: min(66vh, 500px);
+      touch-action: none
+    }
+
+    /* ปุ่มกากบาทตรงถังขยะที่เต็ม */
+    .clear-bin {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #b93822;
+      color: #fff;
+      border: 2px solid #fff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+      transform: translate(-50%, -50%);
+      transition: transform .15s ease, background .15s ease;
+      z-index: 10
+    }
+
+    .clear-bin:hover:not(:disabled) {
+      background: #dc2626;
+      transform: translate(-50%, -50%) scale(1.12)
+    }
+
+    .clear-bin[hidden] {
+      display: none
+    }
+
+    .urow {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 6px 20px rgba(31, 42, 92, .18)
+    }
+
+    .urow[hidden] {
+      display: none
+    }
+
+    .urow .ic {
+      width: 38px;
+      height: 44px;
+      border-radius: 6px;
+      background: #475569;
+      color: #fff;
+      font: 700 10px/44px Kanit, sans-serif;
+      text-align: center;
+      flex: none
+    }
+
+    .urow .info {
+      min-width: 0;
+      flex: 1
+    }
+
+    .urow b {
+      display: block;
+      font-size: .92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .urow small {
+      opacity: .75;
+      font-size: .8rem
+    }
+
+    .urow .st {
+      width: 34%;
+      min-width: 90px;
+      text-align: right
+    }
+
+    .bar {
+      height: 6px;
+      border-radius: 99px;
+      background: #d1fae5;
+      margin-top: 4px;
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--or)
+    }
+
+    .uploaded-list {
+      margin-top: 16px;
+      display: grid;
+      gap: 8px
+    }
+
+    .uploaded-list:empty {
+      display: none
+    }
+
+    .uploaded-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #e7eaf2;
+      border-radius: 14px;
+      padding: 10px 12px
+    }
+
+    .uploaded-item .file-icon {
+      width: 38px;
+      height: 42px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700
+    }
+
+    .uploaded-item .file-info {
+      min-width: 0;
+      flex: 1
+    }
+
+    .uploaded-item .file-info b {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: .9rem
+    }
+
+    .uploaded-item .file-info small {
+      opacity: .7;
+      font-size: .78rem
+    }
+
+    button.remove-file {
+      flex: none;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff0ed;
+      color: #b93822;
+      font-size: .95rem;
+      font-weight: 800
+    }
+
+    button.remove-file:hover:not(:disabled) {
+      background: #b93822;
+      color: #fff
+    }
+
+    .list-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 8px
+    }
+
+    .list-head strong {
+      font-size: .95rem
+    }
+
+    .list-head small {
+      opacity: .7
+    }
+
+    .ctrls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px
+    }
+
+    .wrap button,
+    .modal button,
+    .fbtn {
+      font: inherit;
+      font-weight: 600;
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 20px;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer
+    }
+
+    .wrap button:hover:not(:disabled),
+    .modal button:hover:not(:disabled),
+    .fbtn:not(.disabled):hover {
+      background: var(--or)
+    }
+
+    .wrap button:disabled,
+    .modal button:disabled,
+    .fbtn.disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      pointer-events: none
+    }
+
+    .wrap button.sm,
+    .modal button.sm {
+      background: #d1fae5;
+      color: var(--ink)
+    }
+
+    .wrap button.sm:hover:not(:disabled),
+    .modal button.sm:hover:not(:disabled) {
+      background: #cfd9ff
+    }
+
+    .wrap button.sm[aria-pressed=true],
+    .modal button.sm[aria-pressed=true] {
+      background: var(--ink);
+      color: #fff
+    }
+
+    #go {
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      width: max-content;
+      bottom: 14px;
+      z-index: 8;
+      background: var(--or);
+      font-size: 1.05rem;
+      padding: 11px 26px
+    }
+
+    #go:not([hidden]) {
+      animation: pop .35s ease-out
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(.6);
+        opacity: 0
+      }
+
+      to {
+        transform: none;
+        opacity: 1
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      #go:not([hidden]) {
+        animation: none
+      }
+    }
+
+    input[type=file] {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px
+    }
+
+    .fbtn {
+      position: relative
+    }
+
+    #hint {
+      margin: 0;
+      font-size: .9rem;
+      flex-basis: 100%
+    }
+
+    #msg {
+      min-height: 1.5em;
+      margin: 8px 0 0;
+      font-weight: 600;
+      font-size: .95rem
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 25, 55, .85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 14px
+    }
+
+    .modal[hidden] {
+      display: none
+    }
+
+    .mbox {
+      position: relative;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 20px;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: auto
+    }
+
+    .cm-x {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      padding: 0;
+      background: #b93822;
+      color: #fff;
+      border: 2px solid #fff;
+      font-size: 15px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+      transition: transform .15s ease, background .15s ease;
+      z-index: 2
+    }
+
+    .cm-x:hover {
+      background: #dc2626;
+      transform: scale(1.12)
+    }
+
+    .mbox h2 {
+      margin: 0 0 2px;
+      font-size: 1.2rem
+    }
+
+    .mbox p {
+      margin: 0 0 10px;
+      font-size: .9rem;
+      opacity: .85
+    }
+
+    #cc {
+      display: block;
+      margin: 0 auto 10px;
+      border-radius: 10px;
+      touch-action: none
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 10px;
+      align-items: center
+    }
+
+    .row>* {
+      padding: 0;
+      width: auto;
+      max-width: none;
+      margin-top: 0
+    }
+
+    #cinfo {
+      font-size: .88rem;
+      font-weight: 600;
+      margin-left: auto
+    }
+
+    /* ผลการวิเคราะห์แสดงในพื้นที่ drop zone (เดโม) */
+    .zone-result {
+      position: absolute;
+      background: rgba(255, 255, 255, .97);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 10px 30px rgba(6, 78, 59, .25);
+      z-index: 12;
+      max-height: 240px;
+      overflow: auto
+    }
+
+    .zone-result[hidden] {
+      display: none
+    }
+
+    .zr-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px
+    }
+
+    .zr-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex: none
+    }
+
+    .zr-info {
+      min-width: 0;
+      flex: 1
+    }
+
+    .zr-info b {
+      display: block;
+      font-size: .95rem
+    }
+
+    .zr-info small {
+      opacity: .7;
+      font-size: .75rem;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .zr-x {
+      flex: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 0;
+      background: #fee2e2;
+      color: #b91c1c;
+      font-weight: 800;
+      cursor: pointer
+    }
+
+    .zr-conf {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px
+    }
+
+    .zr-conf .bar {
+      flex: 1;
+      height: 8px
+    }
+
+    .zr-conf span {
+      font-size: .8rem;
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    #zrTip {
+      font-size: .82rem;
+      margin: 0 0 10px;
+      opacity: .85
+    }
+
+    .zr-re {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 0;
+      padding: 0;
+      background: #d1fae5;
+      color: var(--ink);
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .2s, transform .35s ease
+    }
+
+    .zr-re:hover {
+      background: #a7f3d0;
+      transform: rotate(120deg)
+    }
+
+    .samples {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: .88rem;
+      opacity: .85
+    }
+
+    .samples span {
+      font-weight: 600
+    }
+
+    .samples button {
+      padding: 7px 14px;
+      font-size: .85rem
+    }
+
+    /* ===== modal ผลวิเคราะห์ + modal แผนที่ (ตัวอย่าง) ===== */
+    .rm { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 16px; background: rgba(6, 40, 30, .62); backdrop-filter: blur(3px) }
+    .rm[hidden] { display: none }
+    #mm { z-index: 1300 }
+    .rm-box { position: relative; width: min(780px, 100%); max-height: 92vh; overflow: auto; background: #fff; border-radius: 22px; padding: 22px 26px 20px; box-shadow: 0 24px 60px rgba(0, 0, 0, .35); animation: rmIn .38s cubic-bezier(.3, 1.5, .5, 1) }
+    @keyframes rmIn { from { opacity: 0; transform: translateY(26px) scale(.95) } }
+    .rm-x { position: absolute; right: 14px; top: 12px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: #fee2e2; color: #b91c1c; font-weight: 800; cursor: pointer; z-index: 3 }
+    .rm-x:hover { background: #fecaca }
+    .rm-demo { background: #fef3c7; color: #92400e; border: 1.5px dashed #f59e0b; border-radius: 12px; padding: 7px 14px; font-size: .84rem; font-weight: 600; margin: 0 42px 14px 0 }
+    .rm-head { display: flex; gap: 16px; align-items: center; margin-bottom: 12px }
+    .rm-thumb { width: 92px; height: 92px; border-radius: 16px; background: #f1f5f9 center/contain no-repeat; border: 1px solid #e2e8f0; flex: none }
+    .rm-head small { color: #64748b; font-weight: 500 }
+    .rm-head h2 { font-size: 1.45rem; font-weight: 700; margin: 0 0 6px }
+    .rm-badges { display: flex; flex-wrap: wrap; gap: 8px }
+    .rm-badges span { font-size: .8rem; font-weight: 600; padding: 3px 12px; border-radius: 999px; background: #ecfdf5; color: #065f46 }
+    .rm-badges .bin { color: #fff }
+    #rmWhat { margin: 6px 0 14px; color: #334155 }
+    .rm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+    .rm-grid section { background: #f8fafc; border-radius: 16px; padding: 12px 16px }
+    .rm-grid h3 { font-size: .95rem; font-weight: 700; margin: 0 0 6px; color: #065f46 }
+    .rm-grid ul, .rm-grid ol { margin: 0; padding-left: 1.15rem; font-size: .9rem; color: #334155 }
+    .rm-grid li { margin: 3px 0 }
+    .rm-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0 }
+    .rm-facts div { border-radius: 14px; padding: 10px 14px; background: #ecfdf5; font-size: .86rem; color: #064e3b }
+    .rm-facts b { display: block; font-size: .8rem; opacity: .75; margin-bottom: 2px }
+    .rm-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 6px }
+    .rm-primary, .rm-ghost { border: 0; border-radius: 14px; padding: 10px 20px; font-weight: 700; cursor: pointer; font-family: inherit }
+    .rm-primary { background: #059669; color: #fff; box-shadow: 0 4px 0 #047857; transition: transform .15s }
+    .rm-primary:hover { transform: translateY(-2px) }
+    .rm-ghost { background: #e2e8f0; color: #334155 }
+    .zr-more { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 5px 14px; background: #059669; color: #fff; font-size: .8rem; font-weight: 600; cursor: pointer; font-family: inherit }
+    .zr-more:hover { background: #047857 }
+    @media (max-width: 640px) { .rm-grid, .rm-facts { grid-template-columns: 1fr } .rm-box { padding: 18px 16px } }
+
+    /* แผนที่ตัวอย่าง */
+    #map { height: min(46vh, 380px); border-radius: 16px; overflow: hidden; background: #dbeafe; position: relative; z-index: 1 }
+    .map-fail { display: grid; place-items: center; height: 100%; color: #64748b; text-align: center; padding: 20px }
+    .pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: grid; place-items: center; box-shadow: 0 3px 8px rgba(0, 0, 0, .35); border: 3px solid #fff }
+    .pin i { transform: rotate(45deg); font-style: normal; font-size: 15px }
+    .pin.me { background: #2563eb } .pin.ctr { background: #059669 } .pin.near { background: #dc2626; animation: pinBounce 1.2s ease-in-out infinite }
+    @keyframes pinBounce { 50% { transform: rotate(-45deg) translate(-3px, 3px) } }
+    .me-pulse { position: absolute; left: -8px; top: -8px; width: 50px; height: 50px; border-radius: 50%; background: rgba(37, 99, 235, .25); animation: pulse 1.6s ease-out infinite; transform: rotate(45deg) }
+    @keyframes pulse { from { transform: scale(.4) rotate(45deg); opacity: 1 } to { transform: scale(1.4) rotate(45deg); opacity: 0 } }
+    .map-demo { background: rgba(254, 243, 199, .96); color: #92400e; border: 1.5px dashed #f59e0b; border-radius: 10px; padding: 4px 12px; font-size: .78rem; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 0, 0, .2) }
+    .route-info { display: grid; gap: 8px; margin: 12px 0 4px }
+    .route-sum { background: #ecfdf5; color: #064e3b; border-radius: 14px; padding: 10px 14px; font-weight: 600; font-size: .92rem }
+    .route-sum small { display: block; font-weight: 400; opacity: .75 }
+    .ctr-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: .86rem }
+    .ctr-list li { display: flex; justify-content: space-between; gap: 10px; background: #f8fafc; border-radius: 10px; padding: 6px 12px }
+    .ctr-list li.is-near { background: #fee2e2; font-weight: 700 }
+    .rm-grid ul { list-style: disc } .rm-grid ol { list-style: decimal }
+
+    /* ปุ่มในการ์ดผลลัพธ์: ต้องมี specificity สูงกว่า ".wrap button" ไม่งั้นถูกทับเป็นปุ่มเขียวยาว */
+    .zone-result .zr-x { width: 28px; height: 28px; padding: 0; border-radius: 50%; background: #fee2e2; color: #b91c1c; font-size: 14px; line-height: 1; display: grid; place-items: center; flex: none }
+    .zone-result .zr-x:hover:not(:disabled) { background: #fecaca; color: #991b1b }
+    .zone-result .zr-re { padding: 0; background: #d1fae5; color: var(--ink) }
+    .zone-result .zr-re:hover:not(:disabled) { background: #a7f3d0 }
+    .zone-result .zr-more { padding: 6px 16px; font-size: .82rem; background: #059669; color: #fff }
+    .zone-result .zr-more:hover:not(:disabled) { background: #047857 }
+  
+    /* ชุดไอคอนวาดมือ: เส้นไม่เป๊ะ + สีรองเยื้องแบบพิมพ์เหลื่อม */
+    .ico { width: 1.05em; height: 1.05em; display: inline-block; vertical-align: -.22em; overflow: visible; flex: none }
+    .hs { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: url(#wob) }
+    .hf { fill: var(--hf, #fbbf24); opacity: .8; stroke: none; filter: url(#wob2) }
+    .hf { transform: translate(1.6px, 1.3px) }
+    .zr-icon .ico { width: 24px; height: 24px }
+    .zr-x .ico, .rm-x .ico, .cm-x .ico, .clear-bin .ico { width: 14px; height: 14px; vertical-align: middle }
+    .zr-re .ico { width: 17px; height: 17px; vertical-align: middle }
+    .rm-demo .ico, .rm-primary .ico, #mmTitle .ico, .route-sum .ico, .ctr-list .ico { width: 1.15em; height: 1.15em }
+    .pin i .ico { width: 17px; height: 17px; color: #fff }
+    .pin i .hf { --hf: #fff; opacity: .3 }
+
+    /* ปุ่มสไตล์สติกเกอร์วาดมือ: ขอบหมึกหนา ขอบมนไม่เท่ากัน เงาแข็งเยื้อง */
+    .wrap .fbtn, .wrap button#auto, .wrap button#go, .modal button#cok, .wrap button.sm, .modal button.sm,
+    .zone-result .zr-more, .rm-primary, .rm-ghost {
+      border: 2.5px solid #064e3b; color: #064e3b; font-weight: 700;
+      border-radius: 255px 22px 225px 18px / 20px 225px 18px 255px;
+      box-shadow: 3px 4px 0 #064e3b;
+      transition: transform .12s ease, box-shadow .12s ease, background .15s ease
+    }
+    .wrap .fbtn { background: #a7f3d0 }
+    .wrap button#auto { background: #fff7d6 }
+    .wrap button#go { background: #fbbf24; font-size: 1.05rem }
+    .modal button#cok { background: #fbbf24 }
+    .wrap button.sm, .modal button.sm { background: #fffdf2; border-radius: 22px 255px 18px 225px / 225px 20px 255px 18px }
+    .wrap button.sm[aria-pressed=true], .modal button.sm[aria-pressed=true] { background: #a7f3d0; color: #064e3b }
+    .zone-result .zr-more { background: #fbbf24; color: #064e3b }
+    .rm-primary { background: #fbbf24; color: #064e3b }
+    .rm-ghost { background: #fffdf2 }
+    .wrap .fbtn:not(.disabled):hover, .wrap button#auto:hover:not(:disabled), .wrap button#go:hover:not(:disabled), .modal button#cok:hover:not(:disabled),
+    .wrap button.sm.sm:hover:not(:disabled), .modal button.sm.sm:hover:not(:disabled), .zone-result .zr-more:hover:not(:disabled), .rm-primary:hover, .rm-ghost:hover {
+      color: #064e3b; transform: translate(-1px, -2px) rotate(-.6deg); box-shadow: 4px 6px 0 #064e3b; filter: brightness(1.04)
+    }
+    .wrap .fbtn:not(.disabled):active, .wrap button#auto:active:not(:disabled), .wrap button#go:active:not(:disabled), .modal button#cok:active, .wrap button.sm:active, .modal button.sm:active, .rm-primary:active {
+      transform: translate(2px, 3px); box-shadow: 1px 1px 0 #064e3b
+    }
+    .wrap button#auto:hover:not(:disabled) { background: #fde68a }
+    .clear-bin { border: 2.5px solid #064e3b; background: #fca5a5; color: #064e3b; box-shadow: 2px 3px 0 #064e3b }
+    .clear-bin:hover:not(:disabled) { background: #f87171 }
+    .clear-bin .hf { display: none }
+  </style>
+</head>
+
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="wob" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.7"/></filter><filter id="wob2" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".07" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter></defs><symbol id="i-recycle" viewBox="0 0 24 24"><g class="hf"><circle cx="12" cy="12.6" r="7"/></g><g class="hs"><g id="ra"><path d="M9.4 7.4 L11 4.7 Q12 3.5 13.1 4.8 L16.6 10.6"/><path d="M14.2 11 L16.9 10.9 L17.6 8.3"/></g><use href="#ra" transform="rotate(120 12 13)"/><use href="#ra" transform="rotate(240 12 13)"/></g></symbol><symbol id="i-home" viewBox="0 0 24 24"><g class="hf"><path d="M6.6 11.2 L12.3 5.8 L18 11 V19.6 H6.6Z"/></g><g class="hs"><path d="M3.4 11.6 L12 4 L20.7 11.5"/><path d="M5.8 10 V19.4 Q5.8 20.5 6.9 20.4 L17.3 20.6 Q18.3 20.5 18.2 19.4 V10"/><path d="M10 20.4 V14.7 L14.2 14.6 V20.5"/></g></symbol><symbol id="i-share" viewBox="0 0 24 24"><g class="hf"><circle cx="6.6" cy="12" r="2.6"/><circle cx="17.2" cy="5.8" r="2.6"/><circle cx="17" cy="18.2" r="2.6"/></g><g class="hs"><path d="M4.2 12 a2.4 2.5 0 1 0 4.9 .1 a2.5 2.4 0 1 0 -4.9 -.1"/><path d="M14.8 5.8 a2.4 2.4 0 1 0 4.8 .1 a2.4 2.5 0 1 0 -4.8 -.1"/><path d="M14.6 18.3 a2.5 2.4 0 1 0 4.9 -.2 a2.4 2.5 0 1 0 -4.9 .2"/><path d="M8.8 10.8 L14.9 7.2 M8.9 13.3 L14.8 16.8"/></g></symbol><symbol id="i-trash" viewBox="0 0 24 24"><g class="hf"><path d="M6.5 8 L7.4 19.6 H16.7 L17.6 8Z"/></g><g class="hs"><path d="M4.4 6.9 Q12 6.3 19.7 6.8"/><path d="M9.1 6.6 L9.8 3.9 L14.3 4 L14.9 6.6"/><path d="M6.4 7.1 L7.3 19.6 Q7.4 20.6 8.5 20.5 L15.7 20.6 Q16.7 20.6 16.8 19.6 L17.7 7"/><path d="M10.3 10.5 V16.7 M13.8 10.4 V16.6"/></g></symbol><symbol id="i-camera" viewBox="0 0 24 24"><g class="hf"><path d="M4 8.6 H20.2 V18.8 H4Z"/></g><g class="hs"><path d="M3.7 8.8 Q3.7 7.2 5.3 7.2 H7.7 L9.3 4.7 L14.8 4.8 L16.4 7.2 H18.9 Q20.4 7.2 20.3 8.8 V17.6 Q20.4 19.1 18.9 19.1 L5.2 19 Q3.7 19.1 3.8 17.6Z"/><path d="M8.7 12.9 a3.4 3.3 0 1 0 6.8 .1 a3.3 3.4 0 1 0 -6.8 -.1"/></g></symbol><symbol id="i-pin" viewBox="0 0 24 24"><g class="hf"><circle cx="12" cy="9.8" r="6"/></g><g class="hs"><path d="M12 20.9 C8 16.5 5.5 13.4 5.6 9.8 A6.4 6.5 0 0 1 18.5 10 C18.4 13.5 16 16.4 12 20.9Z"/><path d="M9.7 9.9 a2.3 2.2 0 1 0 4.6 -.1 a2.3 2.3 0 1 0 -4.6 .1"/></g></symbol><symbol id="i-bell" viewBox="0 0 24 24"><g class="hf"><path d="M7.2 11.4 A4.8 4.8 0 0 1 16.8 11.2 L18.8 17.4 H5.2Z"/></g><g class="hs"><path d="M5.2 17.5 Q7.1 16 7.1 11.3 A4.9 4.9 0 0 1 16.9 11.2 Q17 16 18.8 17.5Z"/><path d="M10.1 20.3 Q12 21.6 13.9 20.2"/><path d="M12 4.6 V3.1"/></g></symbol><symbol id="i-check" viewBox="0 0 24 24"><g class="hf"><circle cx="12" cy="12" r="8"/></g><g class="hs"><path d="M12 3.6 C16.8 3.4 20.7 7.2 20.4 12 C20.2 16.8 16.6 20.7 11.9 20.4 C7.2 20.2 3.4 16.6 3.6 11.9 C3.8 7.4 7.4 3.7 12 3.6Z"/><path d="M7.8 12.5 L10.8 15.4 L16.5 8.8"/></g></symbol><symbol id="i-chev" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M6.4 9.4 L12.1 15.1 L17.8 9.2"/></g></symbol><symbol id="i-user" viewBox="0 0 24 24"><g class="hf"><circle cx="12" cy="12" r="8"/></g><g class="hs"><path d="M12 3.6 C16.8 3.5 20.6 7.2 20.4 12 C20.2 16.7 16.6 20.6 11.9 20.4 C7.2 20.2 3.4 16.6 3.6 11.9 C3.8 7.4 7.4 3.8 12 3.6Z"/><path d="M9.3 10 a2.7 2.8 0 1 0 5.4 0 a2.7 2.8 0 1 0 -5.4 0"/><path d="M6.6 18.6 Q8 14.9 12 14.9 Q16 14.9 17.5 18.6"/></g></symbol><symbol id="i-heart" viewBox="0 0 24 24"><g class="hf"><path d="M12 20 C6 15.6 3.6 12.6 3.8 9.2 C4 6.4 6.2 4.8 8.4 5 C10 5.1 11.3 6 12 7.4 C12.8 6 14.1 5.1 15.7 5 C18 4.8 20.2 6.5 20.2 9.3 C20.3 12.7 18 15.6 12 20Z"/></g><g class="hs"><path d="M12 20.1 C6 15.7 3.5 12.7 3.7 9.2 C3.9 6.3 6.2 4.7 8.4 4.9 C10 5 11.3 6 12 7.4 C12.8 6 14.1 5 15.7 4.9 C18.1 4.8 20.3 6.5 20.3 9.3 C20.4 12.8 18 15.7 12 20.1Z"/></g></symbol><symbol id="i-plus" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M12 5.2 L12.1 18.9 M5.1 12.1 L18.8 12"/></g></symbol><symbol id="i-out" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M10 4.7 H6 Q4.6 4.6 4.6 6.1 V18 Q4.6 19.4 6 19.5 H10"/><path d="M9.6 12 H19.7 M16 8.1 L20 12 L16 16"/></g></symbol><symbol id="i-bars" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M4.6 7 H19.4 M4.3 12.2 H19.6 M4.8 17.4 H18.7"/></g></symbol><symbol id="i-x" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M6.2 6.4 L17.8 17.8 M17.7 6 L6.3 17.7"/></g></symbol><symbol id="i-list" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M9.6 7 H19.6 M9.4 12.2 H19.5 M9.6 17.3 H19.2 M5 7 h.1 M5 12.2 h.1 M5 17.3 h.1"/></g></symbol><symbol id="i-sync" viewBox="0 0 24 24"><g class="hf"></g><g class="hs"><path d="M19.4 12.2 A7.4 7.4 0 0 1 6.6 16.6 M4.6 11.8 A7.4 7.4 0 0 1 17.4 7.4"/><path d="M18.1 3.5 L17.6 7.8 L13.4 7.3 M5.9 20.5 L6.4 16.2 L10.6 16.7"/></g></symbol><symbol id="i-leaf" viewBox="0 0 24 24"><g class="hf"><path d="M5.6 18.8 C5.4 11.8 10 6.4 19.2 5.2 C19.4 14 14.4 19 5.6 18.8Z"/></g><g class="hs"><path d="M5 19 C4.6 11 9.7 5 19.7 4.5 C19.9 14.4 14.2 19.7 6.4 19.2"/><path d="M4.8 19.8 L13 11.6"/></g></symbol><symbol id="i-warn" viewBox="0 0 24 24"><g class="hf"><path d="M12.2 5 L20.6 19.8 H3.8Z"/></g><g class="hs"><path d="M11.9 3.9 L20.9 19.3 Q21.3 20.5 20 20.5 L4.2 20.4 Q2.8 20.4 3.3 19.2Z"/><path d="M12 10 V14.6 M12 17.5 h.1"/></g></symbol><symbol id="i-plug" viewBox="0 0 24 24"><g class="hf"><path d="M5.8 8.8 H18.2 V11.8 Q18 15.8 12 16Z"/></g><g class="hs"><path d="M8.2 3.7 V8.6 M15.8 3.8 V8.5"/><path d="M5.7 8.7 L18.3 8.6 V11.6 Q18.1 15.9 12 16 Q5.9 15.8 5.7 11.6Z"/><path d="M12 16 V20.5"/></g></symbol><symbol id="i-factory" viewBox="0 0 24 24"><g class="hf"><path d="M4.2 11.2 L9.6 14 V11.2 L15 14 V5 H19.2 L20.1 19.8 H4.2Z"/></g><g class="hs"><path d="M4 19.8 V11 L9.6 14 V11 L15 14 V4.8 H19 L20.1 19.8Z"/><path d="M8 17.2 h.1 M12 17.2 h.1 M16.2 17.2 h.1"/></g></symbol><symbol id="i-car" viewBox="0 0 24 24"><g class="hf"><path d="M4.4 12.6 L6.4 8.4 H17.8 L19.9 12.6 V16.6 H4.4Z"/></g><g class="hs"><path d="M4.2 15.9 V12.7 L6.2 8.3 Q6.6 7.4 7.6 7.4 H16.4 Q17.4 7.4 17.8 8.3 L19.8 12.7 V15.9 Q19.8 16.7 19 16.7 H5 Q4.2 16.7 4.2 15.9Z"/><path d="M4.4 12.4 H19.6 M7.4 16.7 V18.5 M16.6 16.7 V18.5 M7.7 14.5 h.1 M16.4 14.5 h.1"/></g></symbol><symbol id="i-smile" viewBox="0 0 24 24"><g class="hf"><circle cx="12" cy="12" r="8"/></g><g class="hs"><path d="M12 3.6 C16.8 3.4 20.7 7.2 20.4 12 C20.2 16.8 16.6 20.7 11.9 20.4 C7.2 20.2 3.4 16.6 3.6 11.9 C3.8 7.4 7.4 3.7 12 3.6Z"/><path d="M9 10 h.1 M15 10 h.1 M8.6 14 Q12 17.6 15.4 14"/></g></symbol></svg>
+
+    <!-- Navigation (เหมือน nav.php ของระบบจริง — โหมดผู้เยี่ยมชม) -->
+    <nav class="navbar bg-green-500 shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container-fluid px-4">
+            <div class="w-full flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="home.html" class="flex items-center py-4 px-3 text-white hover:bg-green-600 rounded-lg transition-all duration-300">
+                        <i class="fas fa-recycle mr-2 text-xl"></i>
+                        <span class="font-bold text-xl">Bin Buddy</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:flex items-center space-x-1 bg-green-600 bg-opacity-30 rounded-lg px-2">
+                        <a href="home.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-home mr-2"></i><span class="hidden sm:inline">หน้าหลัก</span></a>
+                        <a href="share.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-share-alt mr-2"></i><span class="hidden sm:inline">แบ่งปัน</span></a>
+                        <a href="waste.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-trash mr-2"></i><span class="hidden sm:inline">ข้อมูลขยะ</span></a>
+                        <a href="waste-classification.html" class="py-3 px-3 text-white bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-camera mr-2"></i><span class="hidden sm:inline">สแกน</span></a>
+                        <a href="locations.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-map-marker-alt mr-2"></i><span class="hidden sm:inline">ศูนย์จัดการ</span></a>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-green-600 bg-opacity-30 rounded-lg px-2 py-1">
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="p-2 text-white hover:bg-green-600 transition-all duration-300" aria-label="Notifications" style="border-radius: 0.25rem;">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                            </button>
+                            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto border-none">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">การแจ้งเตือน</h3>
+                                    <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium" data-demo="อ่านการแจ้งเตือนทั้งหมด (เดโม)">อ่านทั้งหมด</button>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-green-50 border-l-4 border-green-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-check-circle text-green-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-green-800">โพสต์ของคุณได้รับการอนุมัติแล้ว</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 14:20 (2 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-white border-l-4 border-gray-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-bell text-gray-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-gray-800">มีความคิดเห็นใหม่ในโพสต์ของคุณ</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 09:05 (7 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                        <div class="flex-shrink-0 ml-2"><span class="w-2 h-2 bg-blue-500 rounded-full block"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleProfile()" class="p-2 text-white hover:bg-green-600 rounded-lg transition-all duration-300 flex items-center space-x-1">
+                                <img src="img/profile/6876674e421ad.svg" alt="Profile" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white" style="object-fit: cover;">
+                                <span class="hidden md:inline text-sm">ผู้เยี่ยมชม</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                                <a href="profile.html" class="flex items-center p-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100"><i class="fas fa-user-circle mr-3 text-green-600 w-5 text-center"></i><span>โปรไฟล์</span></a>
+                                <a href="liked.html" class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-heart mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>โพสต์ที่ถูกใจ</span></a>
+                                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><span class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-plus mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>เพิ่มโพสต์</span></span></a>
+                                <a href="login.html" class="flex items-center p-3 text-red-600 hover:bg-gray-50 transition-all duration-300"><i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i><span>ออกจากระบบ</span></a>
+                            </div>
+                        </div>
+                        <button class="navbar-toggler text-white hover:bg-green-600 p-2 rounded-lg transition-all duration-300 lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header border-b">
+            <h5 class="offcanvas-title font-semibold" id="offcanvasMenuLabel">เมนู</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="space-y-1">
+                <a href="profile.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-user-circle w-8 text-center text-lg"></i><span>โปรไฟล์ของฉัน</span></a>
+                <a href="liked.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-heart w-8 text-center text-lg"></i><span>โพสต์ที่ถูกใจ</span></a>
+                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-plus w-8 text-center text-lg"></i><span>เพิ่มโพสต์</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="home.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-home w-8 text-center text-lg"></i><span>หน้าหลัก</span></a>
+                <a href="share.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-share-alt w-8 text-center text-lg"></i><span>แบ่งปัน</span></a>
+                <a href="waste.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-trash-alt w-8 text-center text-lg"></i><span>ข้อมูลขยะ</span></a>
+                <a href="waste-classification.html" class="flex items-center p-3 rounded-lg transition-all duration-200 bg-green-400 text-green-900 font-semibold"><i class="fas fa-camera w-8 text-center text-lg"></i><span>สแกน</span></a>
+                <a href="locations.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-map-marker-alt w-8 text-center text-lg"></i><span>ศูนย์จัดการ</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="login.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-red-300 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-sign-out-alt w-8 text-center text-lg"></i><span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+    </div>
+
+  <div class="wrap">
+    <h1>AI Waste Classification</h1>
+   
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2>อัปโหลดรูปภาพ</h2>
+          <p>เลือกไฟล์ภาพ ครอปรูป แล้วลากถอยหลังเพื่อเล็ง ปล่อยเพื่อโยนลงถัง (อัปโหลดได้ทีละ 1 ภาพ)</p>
+        </div>
+        <span class="count" id="count">ยังไม่ได้อัปโหลด</span>
+      </div>
+      <div class="cwrap" id="cwrap">
+        <canvas id="cv" aria-label="พื้นที่โยนไฟล์ลงถัง"></canvas>
+        <!-- ปุ่มกากบาทตรงถังขยะเมื่อขยะเต็ม -->
+        <button type="button" class="clear-bin" id="clearBin" hidden aria-label="นำขยะออกจากถัง" title="นำขยะออก"><svg class="ico " aria-hidden="true"><use href="#i-x"/></svg></button>
+        <div class="urow" id="row" hidden>
+          <div class="ic" id="ric">IMG</div>
+          <div class="info"><b id="rn"></b><small id="rs"></small></div>
+          <div class="st"><small id="rt"></small>
+            <div class="bar"><i id="rb"></i></div>
+          </div>
+        </div>
+        <div class="zone-result" id="zoneResult" hidden>
+          <div class="zr-top">
+            <div class="zr-icon" id="zrIcon"><svg class="ico " aria-hidden="true"><use href="#i-recycle"/></svg></div>
+            <div class="zr-info"><b id="zrCat">-</b><small id="zrFile"></small></div>
+            <button type="button" class="zr-x" id="zrClose" aria-label="ปิดผลลัพธ์"><svg class="ico " aria-hidden="true"><use href="#i-x"/></svg></button>
+          </div>
+          <div class="zr-conf"><span id="zrPct">0%</span><div class="bar"><i id="zrBar"></i></div></div>
+          <p id="zrTip"></p>
+          <button type="button" class="zr-more" id="zrMore"><svg class="ico -list-ul" aria-hidden="true"><use href="#i-list"/></svg> ดูรายละเอียด</button>
+          <button type="button" class="zr-re" id="zrAgain" title="วิเคราะห์อีกครั้ง" aria-label="วิเคราะห์อีกครั้ง"><svg class="ico -sync-alt" aria-hidden="true"><use href="#i-sync"/></svg></button>
+        </div>
+        <button id="go" type="button" hidden>เริ่มวิเคราะห์</button>
+      </div>
+      <div class="list-head" id="listHead" hidden>
+ 
+      </div>
+      <div class="uploaded-list" id="uploadedList" aria-live="polite"></div>
+      <div class="ctrls">
+        <!-- รับเฉพาะไฟล์ภาพด้วย accept="image/*" -->
+        <label class="fbtn" id="fbtn">เลือกรูปภาพ<input type="file" id="file" accept="image/*"></label>
+        <button class="sm" id="auto" type="button" disabled>โยนให้เลย</button>
+        <p id="hint">เลือกไฟล์รูปภาพ ลากไฟล์มาวาง คลิกที่กรอบ</p>
+      </div>
+      <p id="msg" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="modal" id="cm" hidden role="dialog" aria-modal="true" aria-labelledby="ct">
+    <div class="mbox">
+      <button id="cmClose" class="cm-x" type="button" aria-label="ปิดหน้าต่างครอป"><svg class="ico " aria-hidden="true"><use href="#i-x"/></svg></button>
+      <h2 id="ct">ครอปรูปก่อนโยน</h2>
+      <p>ลากในกรอบเพื่อเลื่อน ลากที่มุมหรือขอบเพื่อปรับขนาด หรือใช้ปุ่มลูกศรบนแป้นพิมพ์</p>
+      <canvas id="cc" tabindex="0" aria-label="พื้นที่ครอปรูป"></canvas>
+      <div class="row" id="ratios" role="group" aria-label="สัดส่วนกรอบ">
+        <button class="sm" type="button" data-r="0" aria-pressed="true">อิสระ</button>
+        <button class="sm" type="button" data-r="1" aria-pressed="false">1:1</button>
+        <button class="sm" type="button" data-r="1.3333" aria-pressed="false">4:3</button>
+        <button class="sm" type="button" data-r="0.75" aria-pressed="false">3:4</button>
+        <button class="sm" type="button" data-r="1.7778" aria-pressed="false">16:9</button>
+        <span id="cinfo" aria-live="polite"></span>
+      </div>
+      <div class="row">
+        <button id="cok" type="button" style="margin-left:auto">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- modal ผลวิเคราะห์: รายละเอียดขยะ (เดโม) -->
+  <div class="rm" id="rm" hidden role="dialog" aria-modal="true" aria-labelledby="rmTitle">
+    <div class="rm-box">
+      <button type="button" class="rm-x" data-rm-close aria-label="ปิด"><svg class="ico " aria-hidden="true"><use href="#i-x"/></svg></button>
+      <div class="rm-demo"><svg class="ico " aria-hidden="true"><use href="#i-warn"/></svg> โหมดเดโม — ผลวิเคราะห์เป็นการจำลอง ไม่ได้ใช้ AI จริง และข้อมูลทั้งหมดเป็นเพียงตัวอย่างโดยประมาณ</div>
+      <div class="rm-head">
+        <div class="rm-thumb" id="rmThumb"></div>
+        <div>
+          <small>ผลการวิเคราะห์</small>
+          <h2 id="rmTitle">-</h2>
+          <div class="rm-badges"><span id="rmPct">-</span><span class="bin" id="rmBin">-</span></div>
+        </div>
+      </div>
+      <p id="rmWhat"></p>
+      <div class="rm-grid">
+        <section><h3>ตัวอย่างขยะประเภทนี้</h3><ul id="rmEx"></ul></section>
+        <section><h3>วิธีจัดการที่ถูกต้อง</h3><ol id="rmSteps"></ol></section>
+      </div>
+      <div class="rm-facts">
+        <div><b>ระยะเวลาย่อยสลาย (โดยประมาณ)</b><span id="rmLife"></span></div>
+        <div><b>ผลดีต่อสิ่งแวดล้อม</b><span id="rmImpact"></span></div>
+      </div>
+      <div class="rm-actions">
+        <button type="button" class="rm-ghost" data-rm-close>ปิด</button>
+        <button type="button" class="rm-primary" id="rmMap"><svg class="ico " aria-hidden="true"><use href="#i-pin"/></svg> ศูนย์จัดการขยะที่ใกล้ที่สุด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal แผนที่ศูนย์จัดการขยะ (ตัวอย่าง ไม่ใช่ข้อมูลจริง) -->
+  <div class="rm" id="mm" hidden role="dialog" aria-modal="true" aria-labelledby="mmTitle">
+    <div class="rm-box">
+      <button type="button" class="rm-x" data-mm-close aria-label="ปิดแผนที่"><svg class="ico " aria-hidden="true"><use href="#i-x"/></svg></button>
+      <div class="rm-demo"><svg class="ico " aria-hidden="true"><use href="#i-warn"/></svg> <b>ตัวอย่างเท่านั้น</b> — ตำแหน่งของคุณ ศูนย์จัดการขยะ ระยะทาง และเส้นทาง เป็นข้อมูลสมมติเพื่อสาธิตการใช้งาน ไม่ใช่ข้อมูลจริง</div>
+      <h2 id="mmTitle" style="font-size:1.3rem;font-weight:700;margin:0 40px 10px 0"><svg class="ico " aria-hidden="true"><use href="#i-pin"/></svg> ศูนย์จัดการขยะที่ใกล้ที่สุด <span style="font-size:.8rem;font-weight:600;color:#b45309">(ตัวอย่าง)</span></h2>
+      <div id="map" aria-label="แผนที่ตัวอย่างพร้อมหมุดและเส้นทาง"></div>
+      <div class="route-info">
+        <div class="route-sum" id="routeSum">กำลังหาเส้นทาง…</div>
+        <ul class="ctr-list" id="ctrList"></ul>
+      </div>
+      <div class="rm-actions"><button type="button" class="rm-ghost" data-mm-close>กลับไปดูผลวิเคราะห์</button></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      const cl = (v, a, b) => Math.min(b, Math.max(a, v));
+      const cv = $('cv'), ctx = cv.getContext('2d'), OR = '#059669', G = 1800, K = 11, MAXP = 130, PW = 76, PH = 96, DE = 16;
+      const EC = { png: '#6d28d9', jpg: '#6d28d9', jpeg: '#6d28d9', webp: '#6d28d9', gif: '#6d28d9', svg: '#6d28d9', bmp: '#6d28d9', avif: '#6d28d9' };
+      let W, H, dpr, home, zone, bin, it = null, dots = [], dotT = 0, glow = 0, count = 0, busy = false, fullT = 0, full = 0;
+      let uploadedFiles = [], nextFileId = 1, lastFile = null, analyzing = false;
+      const anim = { lidT: 0, lidRot: 0, lidA: 0, shX: 0, shY: 0, shR: 0, sx: 1, sy: 1, gl: 0, scanY: -1 };
+      const sparks = [], SPK = ['#10b981', '#34d399', '#fbbf24', '#ffffff', '#a7f3d0'];
+      function emit(n, x, y, spread) { for (let i = 0; i < n; i++) sparks.push({ x: x + (Math.random() - .5) * 40, y, vx: (Math.random() - .5) * spread, vy: -Math.random() * 220 - 60, l: 1, r: 2 + Math.random() * 3.5, c: SPK[i % SPK.length], star: Math.random() < .4 }) } // lidT: 0=เปิด 1=ปิด, lidRot: ฝาเขย่า, lidA: ฝาปรากฏ, sh*: ถังเขย่า
+      /* หมวดขยะสำหรับผลวิเคราะห์ตัวอย่าง (เดโมไม่ได้เชื่อม AI จริง) */
+      const CATS = [
+        { n: 'ขยะรีไซเคิลได้', c: '#1d4ed8', icon: 'recycle', tip: 'ล้างให้สะอาด แยกตามวัสดุ (พลาสติก แก้ว กระดาษ โลหะ) แล้วทิ้งในถังสีเหลือง', stat: 'ช่วยลดขยะฝังกลบและประหยัดทรัพยากรได้มาก',
+          bin: 'ถังสีเหลือง', binC: '#ca8a04', what: 'วัสดุที่นำกลับไปผ่านกระบวนการผลิตใหม่ได้ เช่น พลาสติก แก้ว กระดาษ และโลหะ ถ้าแยกสะอาดจะรีไซเคิลได้มากขึ้น',
+          ex: ['ขวดน้ำพลาสติก (PET)', 'กระป๋องอลูมิเนียม', 'ขวดแก้ว', 'กล่องกระดาษและหนังสือพิมพ์'],
+          steps: ['เทของเหลวที่เหลือออกให้หมด', 'ล้างให้สะอาดและผึ่งให้แห้ง', 'แยกตามวัสดุ บีบหรือพับให้แบนเพื่อประหยัดที่', 'ทิ้งลงถังสีเหลือง หรือนำไปจุดรับซื้อของเก่า'],
+          life: 'พลาสติก 100–450 ปี · แก้วมากกว่า 1,000 ปี' },
+        { n: 'ขยะอินทรีย์', c: '#15803d', icon: 'leaf', tip: 'ทิ้งในถังสีเขียวหรือทำปุ๋ยหมัก ช่วยลดการเกิดก๊าซมีเทน', stat: 'ตัดก๊าซเรือนกระจกได้ราว 0.3–0.5 กก. CO₂e ต่อชิ้น',
+          bin: 'ถังสีเขียว', binC: '#16a34a', what: 'ขยะที่ย่อยสลายได้เองตามธรรมชาติ ส่วนใหญ่มาจากอาหารและพืช นำไปทำปุ๋ยหมักได้',
+          ex: ['เปลือกกล้วย เปลือกผลไม้', 'เศษอาหาร เศษผัก', 'ใบไม้ กิ่งไม้เล็ก', 'กากกาแฟและเปลือกไข่'],
+          steps: ['แยกถุงพลาสติกหรือกระดาษออกก่อน', 'สะเด็ดน้ำเพื่อลดกลิ่นและน้ำเสีย', 'ทิ้งในถังสีเขียว หรือทำปุ๋ยหมักที่บ้าน', 'หลีกเลี่ยงการทิ้งรวมกับขยะทั่วไป'],
+          life: 'ประมาณ 2–8 สัปดาห์ (ขึ้นกับชนิดและความชื้น)' },
+        { n: 'ขยะทั่วไป', c: '#475569', icon: 'trash', tip: 'มัดถุงให้เรียบร้อย ทิ้งในถังสีเทา/ฟ้า และหลีกเลี่ยงขยะเปียก', stat: 'ควรลดการใช้บรรจุภัณฑ์ตั้งแต่ต้นทางจะดีกว่า',
+          bin: 'ถังสีน้ำเงิน', binC: '#2563eb', what: 'ขยะที่ย่อยสลายยากและไม่คุ้มค่าที่จะรีไซเคิล เช่น ถุงเปื้อน โฟม ซองขนม จึงควรลดการสร้างตั้งแต่ต้นทาง',
+          ex: ['ถุงขนมและซองกาแฟ', 'โฟมเปื้อนอาหาร', 'ถุงพลาสติกเปื้อน', 'ไส้กรองบุหรี่'],
+          steps: ['มัดถุงให้แน่น ไม่ให้ขยะหก', 'แยกขยะเปียกออกก่อน', 'ทิ้งในถังสีน้ำเงิน', 'เลือกใช้ซ้ำหรือบรรจุภัณฑ์ที่รีไซเคิลได้แทน'],
+          life: 'ตั้งแต่ 20 ปีถึงหลายร้อยปี (ขึ้นกับวัสดุ)' },
+        { n: 'ขยะอันตราย', c: '#b93822', icon: 'warn', tip: 'ห้ามทิ้งรวมกับขยะทั่วไป! นำไปจุดรับขยะมีพิษของเทศบาล', stat: 'ป้องกันการปนเปื้อนดินและแหล่งน้ำ',
+          bin: 'ถังสีแดง / จุดรับขยะอันตราย', binC: '#dc2626', what: 'ขยะที่มีสารเคมีหรือโลหะหนัก อาจเป็นอันตรายต่อคนและสิ่งแวดล้อม ต้องแยกทิ้งเฉพาะจุดรับ',
+          ex: ['ถ่านไฟฉายและแบตเตอรี่', 'หลอดไฟ หลอดฟลูออเรสเซนต์', 'กระป๋องสเปรย์', 'ภาชนะสารเคมีและยาหมดอายุ'],
+          steps: ['อย่าทุบ เผา หรือแกะภาชนะ', 'เก็บแยกในภาชนะที่ปิดสนิท', 'นำไปจุดรับขยะอันตรายของเทศบาล', 'แจ้งเจ้าหน้าที่ว่าเป็นสารประเภทใด'],
+          life: 'หลายสิบปี และอาจปนเปื้อนดินและแหล่งน้ำ' },
+        { n: 'ขยะอิเล็กทรอนิกส์', c: '#7c3aed', icon: 'plug', tip: 'นำไปศูนย์รับซื้อหรือจุดรีไซเคิลอิเล็กทรอนิกส์เท่านั้น', stat: 'กู้คืนโลหะมีค่าได้มากกว่า 60% ของน้ำหนัก',
+          bin: 'จุดรับขยะอิเล็กทรอนิกส์', binC: '#7c3aed', what: 'อุปกรณ์ไฟฟ้าและอิเล็กทรอนิกส์ที่หมดอายุการใช้งาน มีโลหะมีค่าที่นำกลับมาใช้ได้ แต่ก็มีสารอันตรายปนอยู่ด้วย',
+          ex: ['โทรศัพท์มือถือเก่า', 'สายชาร์จและหูฟัง', 'แบตเตอรี่โน้ตบุ๊ก', 'อุปกรณ์ไฟฟ้าขนาดเล็ก'],
+          steps: ['สำรองและลบข้อมูลส่วนตัวก่อน', 'ถอดแบตเตอรี่ออกถ้าถอดได้', 'นำไปจุดรับ e-waste หรือศูนย์บริการ', 'ห้ามทิ้งรวมกับขยะทั่วไป'],
+          life: 'หลายร้อยปี และมีโลหะหนักเสี่ยงรั่วไหล' }
+      ];
+
+      /* ---------- กระดาษเก่า/ขยะ ---------- */
+      function makePaper(seed) {
+        let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647, J = a => (rnd() - .5) * 2 * a, w = PW, h = PH, pts = [];
+        for (let x = -w / 2; x < w / 2 - DE; x += 7)pts.push([x, -h / 2 + J(1.2)]);
+        pts.push([w / 2 - DE, -h / 2], [w / 2, -h / 2 + DE]);
+        for (let y = -h / 2 + DE + 7; y < h / 2; y += 7)pts.push([w / 2 + J(1.2), y]);
+        for (let x = w / 2; x > -w / 2; x -= 5)pts.push([x, h / 2 + J(3.2) - (rnd() < .18 ? 4 : 0)]);
+        for (let y = h / 2; y > -h / 2; y -= 7)pts.push([-w / 2 + J(1.2), y]);
+        const wr = [], cr = [], st = [], sp = [];
+        for (let i = 0; i < 8; i++)wr.push({ a: [J(w / 2), J(h / 2)], b: [J(w / 2), J(h / 2)], c: [J(w / 2), J(h / 2)], v: rnd() - .5 });
+        let y = J(h * .22); cr.push([-w / 2, y + J(6), w / 2, y + J(6)]);
+        let x = J(w * .22); cr.push([x + J(5), -h / 2, x + J(5), h / 2]);
+        cr.push([-w / 2, -h * .1 + J(8), -w * .1 + J(6), -h / 2]);
+        st.push({ x: J(w * .22), y: J(h * .22), r: 9 + rnd() * 7 }, { x: J(w * .3), y: J(h * .3), r: 4 + rnd() * 4 });
+        for (let i = 0; i < 9; i++)sp.push({ x: J(w / 2), y: J(h / 2), r: .6 + rnd() * 1.1 });
+        return { pts, wr, cr, st, sp }
+      }
+
+      /* ---------- ลายเส้นวาดมือ (สไตล์เดียวกับชุดไอคอน): เส้นเอียงนิดๆ + สีเหลืองเยื้องจากเส้น ---------- */
+      const INK = '#064e3b', MARK = '#fcd34d';
+      const hj = (i, a) => ((Math.sin(i * 127.1 + 311.7) * 43758.5453) % 1) * a;            // สุ่มแบบคงที่ (ไม่สั่นทุกเฟรม)
+      function hand(pts, closed, a, seed) {                                                  // เส้นโค้งนุ่มผ่านจุด + ความไม่เป๊ะ
+        const p = pts.map((q, i) => [q[0] + hj(i * 2 + seed, a), q[1] + hj(i * 2 + 1 + seed, a)]), n = p.length;
+        ctx.beginPath();
+        if (closed) {
+          ctx.moveTo((p[n - 1][0] + p[0][0]) / 2, (p[n - 1][1] + p[0][1]) / 2);
+          for (let i = 0; i < n; i++) { const q = p[i], r = p[(i + 1) % n]; ctx.quadraticCurveTo(q[0], q[1], (q[0] + r[0]) / 2, (q[1] + r[1]) / 2) }
+          ctx.closePath();
+        } else {
+          ctx.moveTo(p[0][0], p[0][1]);
+          for (let i = 1; i < n - 1; i++) { const q = p[i], r = p[i + 1]; ctx.quadraticCurveTo(q[0], q[1], (q[0] + r[0]) / 2, (q[1] + r[1]) / 2) }
+          ctx.lineTo(p[n - 1][0], p[n - 1][1]);
+        }
+      }
+      function sticker(pts, fill, a, seed, off) {                                           // สีเหลื่อมออกจากเส้นขอบ แล้วตีเส้นหมึกทับ
+        const o = off == null ? 3 : off;
+        ctx.save(); ctx.translate(o, o); hand(pts, true, a, seed); ctx.fillStyle = fill; ctx.fill(); ctx.restore();
+        hand(pts, true, a, seed); ctx.strokeStyle = INK; ctx.lineWidth = 2.6; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+      }
+      function ellPts(cx, cy, rx, ry, n, a0, a1) { const r = []; for (let i = 0; i <= n; i++) { const t = a0 + (a1 - a0) * i / n; r.push([cx + Math.cos(t) * rx, cy + Math.sin(t) * ry]) } return r }
+      /* ---------- ถัง/ขยะ 3D เรนเดอร์จาก Blender (portfolio/blender/build_bin3d.py) ---------- */
+      const B3 = {"bin": {"w": 226, "h": 360, "ppu": 160.22, "rimx": 113.1, "rimy": 32.09, "footy": 338.52, "rimR": 0.68}, "lid": {"w": 282, "h": 105, "ppu": 184.36, "cx": 141.18, "cy": 48.56, "r": 0.76}, "can": {"w": 65, "h": 107, "ppu": 100.0, "cx": 32.5, "cy": 95.5}, "bottle": {"w": 59, "h": 126, "ppu": 100.0, "cx": 29.5, "cy": 117.0}, "carton": {"w": 74, "h": 124, "ppu": 100.0, "cx": 37.5, "cy": 111.0}, "paper": {"w": 88, "h": 80, "ppu": 100.0, "cx": 44.0, "cy": 72.0}, "banana": {"w": 101, "h": 133, "ppu": 100.0, "cx": 40.5, "cy": 35.0}, "cup": {"w": 79, "h": 111, "ppu": 100.0, "cx": 39.5, "cy": 100.5}};
+      const IMG = {}; ['bin_back', 'bin_front', 'lid', 'can', 'bottle', 'carton', 'paper', 'banana', 'cup'].forEach(n => { const i = new Image(); i.src = 'img/bin3d/' + n + '.png?v=1'; IMG[n] = i });
+      const imgOk = n => IMG[n] && IMG[n].complete && IMG[n].naturalWidth;
+      const unit = () => bin.hw / B3.bin.rimR;                 // พิกเซลบนแคนวาสต่อ 1 หน่วยในโมเดล
+      const TR = ['carton', 'cup', 'paper', 'banana', 'bottle', 'can'];
+      function line(a, b, c, d) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke() }
+      function paper(sh, x, y, s, rot, img, ext, col) {
+        const w = PW, h = PH; ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+        ctx.beginPath(); sh.pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath();
+        ctx.shadowColor = 'rgba(0,0,0,.32)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3; ctx.fillStyle = '#e6d6a8'; ctx.fill();
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+        ctx.save(); ctx.clip();
+        const g = ctx.createRadialGradient(0, -4, 6, 0, 0, w * .85); g.addColorStop(0, 'rgba(250,240,205,.95)'); g.addColorStop(.6, 'rgba(222,200,142,.65)'); g.addColorStop(1, 'rgba(140,100,48,.7)');
+        ctx.fillStyle = g; ctx.fillRect(-w, -h, w * 2, h * 2);
+        if (img) {
+          const iw = w - 14, ih = h - 36, iy = -h / 2 + 8, sw = img.naturalWidth || img.width, sh2 = img.naturalHeight || img.height, k = Math.max(iw / sw, ih / sh2);
+          ctx.save(); ctx.beginPath(); ctx.rect(-iw / 2, iy, iw, ih); ctx.clip();
+          ctx.drawImage(img, sw / 2 - iw / k / 2, sh2 / 2 - ih / k / 2, iw / k, ih / k, -iw / 2, iy, iw, ih);
+          ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = 'rgba(205,170,95,.7)'; ctx.fillRect(-iw / 2, iy, iw, ih); ctx.restore();
+          ctx.strokeStyle = 'rgba(90,65,30,.45)'; ctx.lineWidth = 1; ctx.strokeRect(-iw / 2, iy, iw, ih)
+        }
+        else { ctx.fillStyle = 'rgba(90,70,40,.3)'; for (let i = 0; i < 6; i++)ctx.fillRect(-w / 2 + 9, -h / 2 + 14 + i * 9, w - 18 - (i % 3) * 10, 3) }
+        sh.wr.forEach(t => { ctx.fillStyle = t.v > 0 ? 'rgba(255,248,225,' + t.v * .4 + ')' : 'rgba(90,60,25,' + (-t.v * .32) + ')'; ctx.beginPath(); ctx.moveTo(t.a[0], t.a[1]); ctx.lineTo(t.b[0], t.b[1]); ctx.lineTo(t.c[0], t.c[1]); ctx.closePath(); ctx.fill() });
+        sh.st.forEach(t => { ctx.fillStyle = 'rgba(150,100,45,.13)'; ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(120,75,30,.4)'; ctx.lineWidth = 1.8; ctx.stroke() });
+        sh.sp.forEach(t => { ctx.fillStyle = 'rgba(95,60,25,.55)'; ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, 7); ctx.fill() });
+        sh.cr.forEach(c => {
+          const dx = c[2] - c[0], dy = c[3] - c[1], L = Math.hypot(dx, dy), nx = -dy / L * 1.5, ny = dx / L * 1.5;
+          ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(80,55,25,.5)'; line(c[0], c[1], c[2], c[3]);
+          ctx.lineWidth = 1.1; ctx.strokeStyle = 'rgba(255,250,230,.75)'; line(c[0] + nx, c[1] + ny, c[2] + nx, c[3] + ny)
+        });
+        if (ext) { ctx.save(); ctx.translate(0, h / 2 - 14); ctx.rotate(-.12); ctx.globalAlpha = .75; ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.3; ctx.strokeRect(-18, -8, 36, 15); ctx.font = '700 10px Kanit,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(ext, 0, 3); ctx.restore() }
+        ctx.restore();
+        ctx.beginPath(); sh.pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.strokeStyle = 'rgba(90,65,30,.6)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = '#f6ecc8'; ctx.beginPath(); ctx.moveTo(w / 2 - DE, -h / 2); ctx.lineTo(w / 2, -h / 2 + DE); ctx.lineTo(w / 2 - DE, -h / 2 + DE); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore()
+      }
+      const PILE = [[-.5, -8, -.5, .9], [.5, -10, .45, .9], [-.05, -22, .1, .95], [-.32, -38, -.3, .85], [.32, -40, .3, .85], [.04, -30, .12, .88]];
+
+      function updateClearBtnPos() {
+        const btn = $('clearBin');
+        if (btn && bin) {
+          btn.style.left = (bin.x + bin.hw + 16) + 'px';
+          btn.style.top = (bin.ym - 2) + 'px';
+        }
+      }
+
+      function posZoneResult() {
+        const z = $('zoneResult');
+        if (!z || !zone) return;
+        z.style.left = (zone.x + 10) + 'px';
+        z.style.top = (zone.y + 8) + 'px';
+        z.style.width = (zone.w - 20) + 'px';
+      }
+
+      function updateUploadLock() {
+        const locked = uploadedFiles.length > 0 || busy;
+        $('file').disabled = locked;
+        $('fbtn').classList.toggle('disabled', locked);
+      }
+
+      function size() {
+        const r = cv.getBoundingClientRect(); dpr = devicePixelRatio || 1; W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        zone = { w: Math.min(W - 40, 440), h: 180, y: 22 }; zone.x = (W - zone.w) / 2;
+        bin = { x: W / 2, ym: zone.y + zone.h - 38, hw: Math.min(54, W * .14) };
+        home = { x: Math.max(58, W * .17), y: H - 112 };
+        if (it && it.st === 'idle') { it.x = home.x; it.y = home.y }
+        updateClearBtnPos();
+        posZoneResult();
+      }
+      addEventListener('resize', size);
+      const ico = (n, c) => '<svg class="ico ' + (c || '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>';
+      const say = t => $('msg').textContent = t, hint = t => $('hint').textContent = t;
+      const fmt = n => n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+
+      function renderUploadedFiles() {
+        const list = $('uploadedList');
+        list.replaceChildren();
+        $('listHead').hidden = uploadedFiles.length === 0;
+        uploadedFiles.forEach(file => {
+          const item = document.createElement('div');
+          item.className = 'uploaded-item';
+
+          const icon = document.createElement('div');
+          icon.className = 'file-icon';
+          icon.style.background = file.col;
+          icon.textContent = file.ext;
+
+          const info = document.createElement('div');
+          info.className = 'file-info';
+          const name = document.createElement('b');
+          name.textContent = file.name;
+          const size = document.createElement('small');
+          size.textContent = fmt(file.size) + ' · ขยะเต็มถัง';
+          info.append(name, size);
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'remove-file';
+          remove.innerHTML = ico('x');
+          remove.title = 'ลบไฟล์ ' + file.name;
+          remove.setAttribute('aria-label', 'ลบไฟล์ ' + file.name);
+          remove.addEventListener('click', () => removeUploadedFile(file.id));
+
+          item.append(icon, info, remove);
+          list.append(item);
+        });
+        count = uploadedFiles.length;
+        if (count === 0) $('zoneResult').hidden = true;
+        // แสดงสถานะโดยไม่มีตัวเลข
+        $('count').textContent = count > 0 ? 'อัปโหลดแล้ว' : 'ยังไม่ได้อัปโหลด';
+        $('count').classList.toggle('done', count > 0);
+        // เมื่อโยนไฟล์เข้าไปให้แสดงว่าขยะเต็มทันที (fullT = 1)
+        fullT = count > 0 ? 1 : 0;
+        $('clearBin').hidden = count === 0;
+        updateClearBtnPos();
+        updateUploadLock();
+      }
+
+      function removeUploadedFile(id) {
+        const file = uploadedFiles.find(item => item.id === id);
+        if (!file) return;
+        uploadedFiles = uploadedFiles.filter(item => item.id !== id);
+        renderUploadedFiles();
+        if (uploadedFiles.length === 0) {
+          $('go').hidden = true;
+          say('นำไฟล์ ' + file.name + ' ออกแล้ว สามารถเลือกรูปภาพใหม่ได้');
+          hint('เลือกไฟล์รูปภาพ ลากไฟล์มาวาง');
+        }
+      }
+
+      // ปุ่มกากบาทตรงถังขยะที่เต็ม เพื่อเคลียร์ขยะออก
+      $('clearBin').onclick = () => {
+        if (uploadedFiles.length === 0) return;
+        uploadedFiles = [];
+        renderUploadedFiles();
+        $('go').hidden = true;
+        say('เทขยะออกจากถังเรียบร้อยแล้ว สามารถเลือกรูปภาพใหม่ได้');
+        hint('เลือกไฟล์รูปภาพ ลากไฟล์มาวาง');
+      };
+
+      function hashStr(s) { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h) + 1 }
+
+      /* ---------- รับเฉพาะไฟล์รูปภาพ และจำกัดทีละ 1 ไฟล์ ---------- */
+      function isImageFile(f) {
+        if (f.type && f.type.startsWith('image/')) return true;
+        return /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i.test(f.name);
+      }
+
+      function setItem(f, cat) {
+        if (!f) return;
+        if (busy) { say('รอให้อัปโหลดเสร็จก่อน'); return }
+        if (uploadedFiles.length > 0) {
+          say('ขยะเต็มถังแล้ว กรุณากดปุ่ม ✕ เพื่อนำไฟล์เดิมออกก่อนอัปโหลดใหม่');
+          return;
+        }
+        if (!isImageFile(f)) {
+          say('รองรับเฉพาะไฟล์รูปภาพเท่านั้น (เช่น JPG, PNG, WEBP)');
+          return;
+        }
+        const im = new Image();
+        im.onload = () => openCrop(f, im, cat);
+        im.onerror = () => say('เปิดรูปนี้ไม่ได้ ลองไฟล์รูปภาพอื่น');
+        im.src = URL.createObjectURL(f);
+      }
+
+      function spawn(f, img, cropped, cat) {
+        const ext = ((f.name.split('.').pop()) || 'img').slice(0, 4).toUpperCase();
+        it = { f, ext, col: EC[ext.toLowerCase()] || '#6d28d9', img, size: f.size, shape: makePaper(hashStr(f.name + f.size)), cr: 0, x: home.x, y: home.y, vx: 0, vy: 0, rot: 0, vr: 0, s: 1, st: 'idle', t: 0, py: 0 };
+        lastFile = { name: f.name, size: f.size, cat: cat == null ? null : cat, thumb: '' };
+        try { const tw = img.naturalWidth || img.width, th = img.naturalHeight || img.height, k = Math.min(1, 220 / Math.max(tw, th)), tc = document.createElement('canvas'); tc.width = Math.max(1, Math.round(tw * k)); tc.height = Math.max(1, Math.round(th * k)); tc.getContext('2d').drawImage(img, 0, 0, tc.width, tc.height); lastFile.thumb = tc.toDataURL('image/png') } catch (e) { }
+        $('zoneResult').hidden = true;
+        $('go').hidden = true; $('auto').disabled = false;
+        say((cropped ? 'ครอปแล้ว ' : '') + 'รูปภาพ ' + f.name + ' กลายเป็นก้อนขยะพร้อมโยน');
+        hint('จับก้อนกระดาษแล้วลากถอยหลังเพื่อเล็ง เส้นประคือเส้นทางที่จะโยน ปล่อยเมาส์เพื่อโยน');
+      }
+
+      $('file').onchange = e => { setItem(e.target.files[0]); e.target.value = '' };
+      const cw = $('cwrap');
+      cw.ondragover = e => {
+        e.preventDefault();
+        if (uploadedFiles.length === 0 && !busy) cw.classList.add('over');
+      };
+      cw.ondragleave = () => cw.classList.remove('over');
+      cw.ondrop = e => { e.preventDefault(); cw.classList.remove('over'); setItem(e.dataTransfer.files[0]) };
+
+      /* ---------- เครื่องมือครอปรูป ---------- */
+      const cm = $('cm'), cc = $('cc'), cx = cc.getContext('2d'), MIN = 28, HIT = 18;
+      let cimg = null, cfile = null, IW = 0, IH = 0, sc = 1, rect = null, ratio = 0, mode = null, start = null, cropCat = null;
+      const CUR = { nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize' };
+      const hp = r => ({ nw: [r.x, r.y], n: [r.x + r.w / 2, r.y], ne: [r.x + r.w, r.y], e: [r.x + r.w, r.y + r.h / 2], se: [r.x + r.w, r.y + r.h], s: [r.x + r.w / 2, r.y + r.h], sw: [r.x, r.y + r.h], w: [r.x, r.y + r.h / 2] });
+      function openCrop(f, im, cat) {
+        cropCat = cat == null ? null : cat;
+        cfile = f; cimg = im; cm.hidden = false; document.body.style.overflow = 'hidden';
+        const maxW = Math.min(innerWidth - 70, 680), maxH = innerHeight * .5;
+        sc = Math.min(maxW / im.naturalWidth, maxH / im.naturalHeight, 2); IW = Math.round(im.naturalWidth * sc); IH = Math.round(im.naturalHeight * sc);
+        const d = devicePixelRatio || 1; cc.width = IW * d; cc.height = IH * d; cc.style.width = IW + 'px'; cc.style.height = IH + 'px'; cx.setTransform(d, 0, 0, d, 0, 0);
+        setRatio(0, true); rect = { x: IW * .08, y: IH * .08, w: IW * .84, h: IH * .84 }; drawCrop(); $('cok').focus()
+      }
+      function closeCrop() { cm.hidden = true; document.body.style.overflow = '' }
+      function drawCrop() {
+        cx.clearRect(0, 0, IW, IH); cx.drawImage(cimg, 0, 0, IW, IH);
+        cx.fillStyle = 'rgba(15,20,45,.6)'; cx.beginPath(); cx.rect(0, 0, IW, IH); cx.rect(rect.x, rect.y, rect.w, rect.h); cx.fill('evenodd');
+        cx.lineWidth = 1; cx.strokeStyle = 'rgba(255,255,255,.45)';
+        for (let i = 1; i < 3; i++) { line2(rect.x + rect.w * i / 3, rect.y, rect.x + rect.w * i / 3, rect.y + rect.h); line2(rect.x, rect.y + rect.h * i / 3, rect.x + rect.w, rect.y + rect.h * i / 3) }
+        cx.lineWidth = 2; cx.strokeStyle = '#fff'; cx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+        Object.values(hp(rect)).forEach(p => { cx.fillStyle = '#fff'; cx.strokeStyle = OR; cx.lineWidth = 2; cx.fillRect(p[0] - 5, p[1] - 5, 10, 10); cx.strokeRect(p[0] - 5, p[1] - 5, 10, 10) });
+        $('cinfo').textContent = Math.round(rect.w / sc) + ' × ' + Math.round(rect.h / sc) + ' px (' + Math.round(rect.w * rect.h / (IW * IH) * 100) + '% ของภาพ)'
+      }
+      function line2(a, b, c, d) { cx.beginPath(); cx.moveTo(a, b); cx.lineTo(c, d); cx.stroke() }
+      function cpos(e) { const r = cc.getBoundingClientRect(); return { x: (e.clientX - r.left) * IW / r.width, y: (e.clientY - r.top) * IH / r.height } }
+      function hit(p) {
+        let best = null, bd = HIT; const P = hp(rect); for (const k in P) { const d = Math.hypot(p.x - P[k][0], p.y - P[k][1]); if (d < bd) { bd = d; best = k } }
+        if (best) return best; return (p.x > rect.x && p.x < rect.x + rect.w && p.y > rect.y && p.y < rect.y + rect.h) ? 'move' : null
+      }
+      cc.onpointerdown = e => { const p = cpos(e), h = hit(p); if (!h) return; mode = h; start = { p, rect: { ...rect } }; cc.setPointerCapture(e.pointerId) };
+      cc.onpointermove = e => {
+        const p = cpos(e);
+        if (!mode) { const h = hit(p); cc.style.cursor = h ? (h === 'move' ? 'move' : CUR[h]) : 'default'; return }
+        if (mode === 'move') { const r0 = start.rect; rect = { x: cl(r0.x + p.x - start.p.x, 0, IW - r0.w), y: cl(r0.y + p.y - start.p.y, 0, IH - r0.h), w: r0.w, h: r0.h } } else resize(mode, p.x, p.y);
+        drawCrop()
+      };
+      cc.onpointerup = cc.onpointercancel = () => { mode = null };
+      function resize(h, px, py) {
+        const r0 = start.rect, L = r0.x, T = r0.y, Rt = r0.x + r0.w, B = r0.y + r0.h; px = cl(px, 0, IW); py = cl(py, 0, IH);
+        if (!ratio) {
+          let l = L, t = T, rt = Rt, b = B;
+          if (h.includes('w')) l = Math.min(px, rt - MIN); if (h.includes('e')) rt = Math.max(px, l + MIN);
+          if (h.includes('n')) t = Math.min(py, b - MIN); if (h.includes('s')) b = Math.max(py, t + MIN);
+          rect = { x: l, y: t, w: rt - l, h: b - t }; return
+        }
+        const A = ratio;
+        if (h.length === 2) {
+          const ax = h.includes('w') ? Rt : L, ay = h.includes('n') ? B : T, sx = h.includes('w') ? -1 : 1, sy = h.includes('n') ? -1 : 1;
+          let w = Math.max(Math.abs(px - ax), Math.abs(py - ay) * A); const mw = Math.min(sx > 0 ? IW - ax : ax, (sy > 0 ? IH - ay : ay) * A); w = Math.max(MIN, Math.min(w, mw)); const hh = w / A;
+          rect = { x: sx > 0 ? ax : ax - w, y: sy > 0 ? ay : ay - hh, w, h: hh }; return
+        }
+        if (h === 'e' || h === 'w') {
+          const ax = h === 'e' ? L : Rt, cy = T + r0.h / 2; let w = Math.abs(px - ax); const mw = Math.min(h === 'e' ? IW - ax : ax, Math.min(cy, IH - cy) * 2 * A); w = Math.max(MIN, Math.min(w, mw)); const hh = w / A;
+          rect = { x: h === 'e' ? ax : ax - w, y: cy - hh / 2, w, h: hh }; return
+        }
+        const ay = h === 's' ? T : B, cxm = L + r0.w / 2; let hh = Math.abs(py - ay); const mh = Math.min(h === 's' ? IH - ay : ay, Math.min(cxm, IW - cxm) * 2 / A); hh = Math.max(MIN / A, Math.min(hh, mh)); const w = hh * A;
+        rect = { x: cxm - w / 2, y: h === 's' ? ay : ay - hh, w, h: hh }
+      }
+      function setRatio(a, quiet) {
+        ratio = a; document.querySelectorAll('#ratios [data-r]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.r === a)));
+        if (a && !quiet) {
+          const mx = rect.x + rect.w / 2, my = rect.y + rect.h / 2; let w = rect.w, h = rect.h; if (w / h > a) w = h * a; else h = w / a;
+          rect = { x: cl(mx - w / 2, 0, IW - w), y: cl(my - h / 2, 0, IH - h), w, h }; drawCrop()
+        }
+      }
+      document.querySelectorAll('#ratios [data-r]').forEach(b => b.onclick = () => setRatio(+b.dataset.r));
+      cc.onkeydown = e => {
+        const st = e.shiftKey ? 1 : 8, m = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key]; if (!m) return; e.preventDefault();
+        rect.x = cl(rect.x + m[0], 0, IW - rect.w); rect.y = cl(rect.y + m[1], 0, IH - rect.h); drawCrop()
+      };
+      addEventListener('keydown', e => { if (!cm.hidden && e.key === 'Escape') { closeCrop(); say('ยกเลิกการครอป') } });
+      $('cmClose').onclick = () => { closeCrop(); say('ยกเลิกการครอป') };
+      function applyCrop(whole) {
+        const sx = whole ? 0 : rect.x / sc, sy = whole ? 0 : rect.y / sc, sw = whole ? cimg.naturalWidth : rect.w / sc, sh = whole ? cimg.naturalHeight : rect.h / sc,
+          k = Math.min(1, 1024 / Math.max(sw, sh)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(sw * k)); c.height = Math.max(1, Math.round(sh * k)); c.getContext('2d').drawImage(cimg, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        closeCrop(); const f = cfile; spawn(f, c, !whole, cropCat); cropCat = null;
+        c.toBlob(b => { if (b && it && it.f === f) it.size = b.size }, 'image/jpeg', .9)
+      }
+      $('cok').onclick = () => applyCrop(false);
+
+      /* ---------- โยน ---------- */
+      function plan(x, y, vx, vy) {
+        const d = vy * vy - 2 * G * (y - bin.ym);
+        if (vy < 0 && d > 0) { const t = (-vy + Math.sqrt(d)) / G, e = x + vx * t - bin.x; if (Math.abs(e) < bin.hw + 60) vx = (bin.x + e * .35 - x) / t } return vx
+      }
+      function path(x, y, vx, vy) {
+        const pts = []; let py = y; for (let i = 0; i < 80; i++) {
+          const dt = .025, prev = py; vy += G * dt; x += vx * dt; py += vy * dt;
+          if (x < 34 || x > W - 34) { vx *= -.6; x = cl(x, 34, W - 34) } pts.push([x, py]); if (vy > 0 && prev <= bin.ym && py > bin.ym) break; if (py > H) break
+        } return pts
+      }
+      const vel = () => ({ vx: (home.x - it.x) * K, vy: (home.y - it.y) * K });
+      function pos(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top } }
+      const near = p => it && it.st === 'idle' && Math.hypot(p.x - it.x, p.y - it.y) < 60;
+      let suppressFileClick = false;
+      cv.onpointerdown = e => { if (!near(pos(e))) return; it.st = 'drag'; suppressFileClick = true; cv.style.cursor = 'grabbing'; cv.setPointerCapture(e.pointerId) };
+      cv.onpointermove = e => {
+        const p = pos(e);
+        if (it && it.st === 'drag') { let dx = p.x - home.x, dy = p.y - home.y; const d = Math.hypot(dx, dy); if (d > MAXP) { dx *= MAXP / d; dy *= MAXP / d } it.x = home.x + dx; it.y = home.y + dy }
+        else cv.style.cursor = near(p) ? 'grab' : 'default'
+      };
+      cv.onpointerup = cv.onpointercancel = () => { if (it && it.st === 'drag') { cv.style.cursor = 'default'; release(); setTimeout(() => suppressFileClick = false, 80) } };
+      /* คลิกที่กรอบอัปโหลดเพื่อเปิดหน้าต่างเลือกไฟล์ (ยกเว้นตอนเพิ่งลากชิ้นขยะ) */
+      $('cwrap').addEventListener('click', e => {
+        if (suppressFileClick) return;
+        if (e.target.closest('button')) return;
+        if (uploadedFiles.length > 0 || busy) return;
+        $('file').click();
+      });
+      function fly() { it.st = 'fly'; it.t = 0; dotT = 0; it.py = it.y; it.vr = it.vx / 600; say('') }
+      function release() {
+        const v = vel();
+        if (Math.hypot(it.x - home.x, it.y - home.y) < 28) { it.st = 'back'; return }
+        if (v.vy > -500) { it.st = 'back'; say('ลากถอยลงด้านล่างให้มากขึ้น เพื่อเล็งขึ้นไปทางถัง'); return }
+        it.vx = plan(it.x, it.y, v.vx, v.vy); it.vy = v.vy; fly()
+      }
+      $('auto').onclick = () => { if (!it || it.st !== 'idle') return; const T = .8; it.vx = (bin.x - it.x) / T; it.vy = (bin.ym - it.y) / T - .5 * G * T; fly() };
+      /* ---------- ผลวิเคราะห์ตัวอย่าง (เดโมไม่ได้เชื่อม AI จริง) ---------- */
+      function runAnalysis() {
+        if (!lastFile || analyzing) return;
+        analyzing = true;
+        const b = $('go');
+        b.disabled = true; b.hidden = true; b.textContent = 'กำลังวิเคราะห์…';
+        say('AI กำลังวิเคราะห์รูปภาพ…');
+        $('zoneResult').hidden = true;
+        Object.assign(anim, { lidA: 0, lidT: 0, lidRot: 0, shX: 0, shY: 0, shR: 0, sx: 1, sy: 1, gl: 0, scanY: -1 });
+        const P = { t: 0 };
+        const tl = gsap.timeline({
+          onComplete: () => {
+            analyzing = false;
+            b.disabled = false; b.textContent = 'เริ่มวิเคราะห์';
+            showResult(lastFile);
+            say('');
+            setTimeout(() => openResultModal(lastFile), 650);                               // เปิด modal รายละเอียดขยะ
+          }
+        });
+        tl.to(anim, { lidA: 1, duration: .4, ease: 'power2.out' })                          // ฝาลอยเข้ามา
+          .to(anim, { lidT: 1, duration: .5, ease: 'back.out(2)' })                         // ฝาปิดดัง "ปึ้ก" (เด้งเกิน)
+          .to(anim, { sy: .88, sx: 1.08, duration: .1, ease: 'power2.out' }, '-=.15')       // ถังยุบเล็กน้อยตอนฝาปิด
+          .to(anim, { sy: 1, sx: 1, duration: .55, ease: 'elastic.out(1,.35)' })
+          .to(anim, { gl: 1, duration: .3 }, '<')                                           // แสงสแกนรอบถัง
+          .add(() => emit(8, bin.x, bin.ym - 8, 260), '<')
+          .to(P, {                                                                          // ช่วงสแกน: ถังโยกหมุนรอบฐาน แรงเพิ่มแล้วค่อยเบาลง มีลำแสงวิ่งขึ้นลงและประกายลอยออกมา
+            t: 1, duration: 1.9, ease: 'none',
+            onUpdate: () => {
+              const t = P.t, env = Math.pow(Math.sin(Math.PI * Math.min(1, t)), .7), w = t * 52;
+              anim.shR = Math.sin(w) * .055 * env; anim.shX = Math.sin(w * .8 + 1) * 5 * env; anim.shY = -Math.abs(Math.sin(w * .5)) * 9 * env;
+              anim.sx = 1 + Math.sin(w + .6) * .022 * env; anim.sy = 1 - Math.sin(w + .6) * .022 * env;
+              anim.scanY = .5 - .5 * Math.cos(t * Math.PI * 4);
+              if (Math.random() < .3) emit(1, bin.x + (Math.random() - .5) * bin.hw, bin.ym - 6, 180);
+            }
+          })
+          .to(anim, { shR: 0, shX: 0, shY: 0, sx: 1, sy: 1, scanY: -1, duration: .15 })
+          .to(anim, { lidT: 0, duration: .65, ease: 'back.out(1.7)' }, '+=.1')               // ฝาเปิดออกพร้อมประกายพุ่ง
+          .add(() => emit(30, bin.x, bin.ym - 10, 560), '-=.5')
+          .to(anim, { gl: 0, duration: .5 }, '<');
+      }
+      function showResult(f) {
+        if (!f || uploadedFiles.length === 0) return;
+        const idx = f.cat != null ? f.cat : hashStr(f.name + f.size) % CATS.length;
+        const c = CATS[idx];
+        const pct = 78 + hashStr(f.name + '#') % 20;
+        $('zrCat').textContent = c.n;
+        $('zrFile').textContent = f.name + ' · ' + fmt(f.size);
+        $('zrIcon').innerHTML = ico(c.icon);
+        $('zrIcon').style.background = c.c + '26';
+        $('zrPct').textContent = pct + '%';
+        $('zrBar').style.width = '0';
+        $('zrBar').style.background = c.c;
+        $('zrTip').innerHTML = '<b>ถังที่แนะนำ:</b> ' + c.tip + ' — ' + c.stat;
+        const z = $('zoneResult');
+        z.hidden = false;
+        gsap.fromTo(z, { autoAlpha: 0, y: 14, scale: .95 }, { autoAlpha: 1, y: 0, scale: 1, duration: .45, ease: 'back.out(1.6)' });
+        gsap.fromTo($('zrBar'), { width: '0%' }, { width: pct + '%', duration: .9, ease: 'power2.out', delay: .2 });
+      }
+      /* ---------- modal ผลวิเคราะห์ + modal แผนที่ (ตัวอย่าง ไม่ใช่ข้อมูลจริง) ---------- */
+      const rm = $('rm'), mm = $('mm');
+      let mapObj = null, mapLayer = null, rmOpener = null;
+      function catOf(f) {
+        const idx = f.cat != null ? f.cat : hashStr(f.name + f.size) % CATS.length;
+        return { c: CATS[idx], pct: 78 + hashStr(f.name + '#') % 20 };
+      }
+      function fillList(el, arr) { el.textContent = ''; arr.forEach(t => { const li = document.createElement('li'); li.textContent = t; el.appendChild(li) }) }
+      function openResultModal(f) {
+        if (!f) return;
+        const { c, pct } = catOf(f);
+        $('rmTitle').innerHTML = ico(c.icon) + ' ' + c.n;
+        $('rmPct').textContent = 'ความมั่นใจ ' + pct + '%';
+        const b = $('rmBin'); b.innerHTML = ico('trash') + ' ' + c.bin; b.style.background = c.binC;
+        $('rmWhat').textContent = c.what;
+        fillList($('rmEx'), c.ex); fillList($('rmSteps'), c.steps);
+        $('rmLife').textContent = c.life; $('rmImpact').textContent = c.stat;
+        $('rmThumb').style.backgroundImage = f.thumb ? 'url(' + f.thumb + ')' : 'none';
+        rmOpener = document.activeElement; rm.hidden = false; document.body.style.overflow = 'hidden';
+        $('rmMap').focus();
+      }
+      function closeResultModal() { rm.hidden = true; if (mm.hidden) document.body.style.overflow = ''; if (rmOpener && rmOpener.focus) rmOpener.focus() }
+      rm.querySelectorAll('[data-rm-close]').forEach(b => b.onclick = closeResultModal);
+      rm.addEventListener('click', e => { if (e.target === rm) closeResultModal() });
+      $('zrMore').onclick = () => openResultModal(lastFile);
+
+      /* พิกัดสมมติสำหรับสาธิต (ไม่ใช่ศูนย์จัดการขยะจริง) */
+      const DEMO_ME = [19.9066, 99.8338];
+      const DEMO_CTR = [
+        { n: 'ศูนย์จัดการขยะ (ตัวอย่าง) A', p: [19.9143, 99.8266] },
+        { n: 'ศูนย์จัดการขยะ (ตัวอย่าง) B', p: [19.8955, 99.8196] },
+        { n: 'ศูนย์จัดการขยะ (ตัวอย่าง) C', p: [19.9268, 99.8447] }
+      ];
+      function hav(a, b) { const R = 6371, d = Math.PI / 180, dLa = (b[0] - a[0]) * d, dLo = (b[1] - a[1]) * d, x = Math.sin(dLa / 2) ** 2 + Math.cos(a[0] * d) * Math.cos(b[0] * d) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(x)) }
+      const pinIcon = (cls, emoji, pulse) => L.divIcon({ className: '', iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -30], html: '<div class="pin ' + cls + '">' + (pulse ? '<span class="me-pulse"></span>' : '') + '<i>' + emoji + '</i></div>' });
+      function openMapModal() {
+        const f = lastFile, info = f ? catOf(f).c : null;
+        rmOpener = document.activeElement; mm.hidden = false; document.body.style.overflow = 'hidden';
+        const holder = $('map');
+        if (typeof L === 'undefined') { holder.innerHTML = '<div class="map-fail">โหลดแผนที่ไม่ได้ (ต้องเชื่อมต่ออินเทอร์เน็ต)<br>นี่เป็นตัวอย่างเท่านั้น</div>'; $('routeSum').textContent = 'ไม่สามารถแสดงเส้นทางตัวอย่างได้'; return }
+        if (!mapObj) {
+          mapObj = L.map(holder, { zoomControl: true, attributionControl: true }).setView(DEMO_ME, 14);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(mapObj);
+          const Demo = L.Control.extend({ onAdd() { const d = L.DomUtil.create('div', 'map-demo'); d.textContent = 'ตัวอย่าง (DEMO) — ไม่ใช่ข้อมูลจริง'; return d } });
+          new Demo({ position: 'topleft' }).addTo(mapObj);
+        }
+        if (mapLayer) mapLayer.remove(); mapLayer = L.layerGroup().addTo(mapObj);
+        const ds = DEMO_CTR.map(c => ({ ...c, d: hav(DEMO_ME, c.p) })).sort((a, b) => a.d - b.d);
+        L.marker(DEMO_ME, { icon: pinIcon('me', ico('smile'), true) }).addTo(mapLayer).bindPopup('<b>ตำแหน่งของคุณ</b><br>(ตัวอย่าง ไม่ใช่ตำแหน่งจริง)');
+        ds.forEach((c, i) => L.marker(c.p, { icon: pinIcon(i === 0 ? 'near' : 'ctr', i === 0 ? ico('recycle') : ico('factory')) }).addTo(mapLayer)
+          .bindPopup('<b>' + c.n + '</b><br>' + (i === 0 ? 'ใกล้ที่สุด · ' : '') + c.d.toFixed(1) + ' กม. (โดยประมาณ)' + (info ? '<br>รับ: ' + info.n : '')));
+        const ul = $('ctrList'); ul.textContent = '';
+        ds.forEach((c, i) => { const li = document.createElement('li'); if (i === 0) li.className = 'is-near'; li.innerHTML = '<span>' + (i === 0 ? ico('pin') + ' ' : '') + c.n + '</span><span>' + c.d.toFixed(1) + ' กม.</span>'; ul.appendChild(li) });
+        const near = ds[0], sum = $('routeSum');
+        const straight = () => { const km = near.d * 1.3; return [[DEMO_ME, [DEMO_ME[0] + (near.p[0] - DEMO_ME[0]) * .5, DEMO_ME[1]], [near.p[0], DEMO_ME[1] + (near.p[1] - DEMO_ME[1]) * .5], near.p], km, Math.max(3, Math.round(km / 25 * 60))] };
+        const draw = (pts, km, min, real) => {
+          L.polyline(pts, { color: '#fff', weight: 10, opacity: .9 }).addTo(mapLayer);
+          L.polyline(pts, { color: '#dc2626', weight: 5, opacity: .95, dashArray: real ? null : '10 8' }).addTo(mapLayer);
+          mapObj.fitBounds(L.latLngBounds(pts).pad(.25));
+          sum.innerHTML = ico('car') + ' เส้นทางตัวอย่างไปยัง <b>' + near.n + '</b><small>ระยะทางประมาณ ' + km.toFixed(1) + ' กม. · ใช้เวลาประมาณ ' + min + ' นาที (ตัวอย่าง ไม่ใช่ข้อมูลจริง)' + (info ? ' · รับขยะประเภท' + info.n : '') + '</small>';
+        };
+        mapObj.fitBounds(L.latLngBounds([DEMO_ME, near.p]).pad(.35)); setTimeout(() => mapObj.invalidateSize(), 60);
+        sum.textContent = 'กำลังหาเส้นทาง…';
+        const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 6000);
+        fetch('https://router.project-osrm.org/route/v1/driving/' + DEMO_ME[1] + ',' + DEMO_ME[0] + ';' + near.p[1] + ',' + near.p[0] + '?overview=full&geometries=geojson', { signal: ctl.signal })
+          .then(r => r.json()).then(j => { clearTimeout(to); const r = j.routes[0]; draw(r.geometry.coordinates.map(c => [c[1], c[0]]), r.distance / 1000, Math.max(1, Math.round(r.duration / 60)), true) })
+          .catch(() => { clearTimeout(to); const s = straight(); draw(s[0], s[1], s[2], false) });
+      }
+      function closeMapModal() { mm.hidden = true; if (rm.hidden) document.body.style.overflow = '' }
+      mm.querySelectorAll('[data-mm-close]').forEach(b => b.onclick = closeMapModal);
+      mm.addEventListener('click', e => { if (e.target === mm) closeMapModal() });
+      $('rmMap').onclick = openMapModal;
+      addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!mm.hidden) closeMapModal(); else if (!rm.hidden) closeResultModal() });
+
+      /* เตือนว่าเป็นเดโม่สีก่อนเริ่มวิเคราะห์ (ทั้งปุ่มเริ่มและปุ่มรีโหลด) */
+      function askDemoThenRun() {
+        Swal.fire({
+          icon: 'warning',
+          title: 'โหมดเดโม',
+          html: 'นี่เป็นเพียง<strong>ตัวอย่างการใช้งาน</strong><br>การอัปโหลดและผลวิเคราะห์เป็นการจำลอง ไฟล์ของคุณไม่ได้ถูกส่งออกจากเครื่อง',
+          confirmButtonText: 'ตกลง',
+          confirmButtonColor: '#d97706'
+        }).then(r => { if (r.isConfirmed) runAnalysis() });
+      }
+      $('go').onclick = askDemoThenRun;
+      $('zrAgain').onclick = askDemoThenRun;
+      $('zrClose').onclick = () => { $('zoneResult').hidden = true; say('ปิดผลการวิเคราะห์แล้ว') };
+
+      function startUpload(f, ext, col, size) {
+        busy = true;
+        updateUploadLock();
+        $('row').hidden = false; $('rn').textContent = f.name; $('rs').textContent = fmt(size); $('ric').textContent = ext; $('ric').style.background = col;
+        $('rt').textContent = 'กำลังอัปโหลด…'; $('rb').style.width = '0'; $('go').disabled = true; const t0 = performance.now();
+        (function tick(n) {
+          const p = Math.min(1, (n - t0) / 2200); $('rb').style.width = p * 100 + '%';
+          if (p < 1) return requestAnimationFrame(tick);
+          $('rt').innerHTML = 'อัปโหลดแล้ว ' + ico('check');
+          uploadedFiles = [{
+            id: nextFileId++,
+            name: f.name,
+            size: size,
+            ext: ext,
+            col: col
+          }];
+          busy = false;
+          renderUploadedFiles();
+          say('โยนลงถังเรียบร้อย! ตอนนี้ขยะเต็มถังแล้ว (กด ✕ เพื่อนำออกหากต้องการเปลี่ยนรูป)');
+          // แสดงปุ่มวิเคราะห์หลังแถบสถานะอัปโหลดหายไป เพื่อไม่ให้ซ้อนกัน
+          setTimeout(() => {
+            if (busy) return;
+            $('row').hidden = true;
+            $('go').hidden = false;
+            $('go').disabled = false;
+          }, 1400)
+        })(t0)
+      }
+
+      function step(dt) {
+        sparks.forEach(p => { p.l -= dt * 1.1; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 520 * dt }); for (let i = sparks.length - 1; i >= 0; i--) if (sparks[i].l <= 0) sparks.splice(i, 1);
+        glow = Math.max(0, glow - dt); full += (fullT - full) * Math.min(1, dt * 5); dots.forEach(d => d.l -= dt * 1.3); dots = dots.filter(d => d.l > 0);
+        if (!it) return;
+        if (it.cr < 1) it.cr = Math.min(1, it.cr + dt * 2.2);
+        if (it.st === 'fly' || it.st === 'fall') {
+          it.py = it.y; it.vy += G * dt; it.x += it.vx * dt; it.y += it.vy * dt; it.rot += it.vr * dt;
+          dotT += dt; if (dotT > .03) { dots.push({ x: it.x, y: it.y, l: 1 }); dotT = 0 }
+          if (it.x < 34 || it.x > W - 34) { it.vx *= -.6; it.vr *= -1; it.x = cl(it.x, 34, W - 34) }
+          if (it.st === 'fly' && it.vy > 0 && it.py <= bin.ym && it.y > bin.ym) { if (Math.abs(it.x - bin.x) < bin.hw - 8) { it.st = 'sink'; it.t = 0 } else it.st = 'fall' }
+          if (it.st === 'fall' && it.y > H - 40) { it.y = H - 40; it.vy *= -.4; it.vx *= .7; if (Math.abs(it.vy) < 120) { it.st = 'wait'; it.t = 0; say('พลาดถัง ลองอีกครั้ง') } }
+        } else if (it.st === 'sink') {
+          it.t += dt; it.x += (bin.x - it.x) * Math.min(1, dt * 12); it.y += (bin.ym + 20 - it.y) * Math.min(1, dt * 8); it.s = Math.max(.4, 1 - it.t * 2);
+          if (it.t > .3) {
+            glow = .9;
+            fullT = 1; // ขยะเต็มถังทันทีที่ลงถัง
+            $('clearBin').hidden = false;
+            updateClearBtnPos();
+            startUpload(it.f, it.ext, it.col, it.size);
+            it = null;
+            $('auto').disabled = true;
+            hint('รูปภาพลงถังแล้ว ขยะเต็มถัง! กดปุ่ม ✕ ที่ถังหากต้องการเปลี่ยนรูปใหม่');
+          }
+        } else if (it.st === 'wait') { it.t += dt; if (it.t > .5) it.st = 'back' }
+        else if (it.st === 'back') {
+          const k = Math.min(1, dt * 7); it.x += (home.x - it.x) * k; it.y += (home.y - it.y) * k; it.rot *= 1 - k; it.s += (1 - it.s) * k;
+          if (Math.hypot(home.x - it.x, home.y - it.y) < 2) { it.x = home.x; it.y = home.y; it.rot = 0; it.s = 1; it.st = 'idle' }
+        }
+      }
+
+      /* ---------- วาด ---------- */
+      function drawZone() {
+        ctx.save(); ctx.setLineDash([8, 6]); ctx.lineWidth = 2;
+        ctx.fillStyle = glow > 0 ? 'rgba(16,185,129,.15)' : '#fff'; ctx.strokeStyle = glow > 0 ? OR : '#9aa3b8';
+        ctx.beginPath(); ctx.roundRect(zone.x, zone.y, zone.w, zone.h, 18); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; hand([[W / 2 + 1, zone.y + 40], [W / 2 - 2, zone.y + 30], [W / 2, zone.y + 19]], false, 0, 1); ctx.stroke(); hand([[W / 2 - 8, zone.y + 27], [W / 2, zone.y + 19], [W / 2 + 8, zone.y + 26]], false, 0, 2); ctx.stroke(); ctx.lineWidth = 2;
+        ctx.fillStyle = '#065f46'; ctx.textAlign = 'center'; ctx.font = '600 15px Kanit,sans-serif';
+        ctx.fillText(count > 0 ? 'อัปโหลดรูปภาพแล้ว (ขยะเต็ม)' : 'ลากไฟล์รูปภาพมาวางที่นี่', W / 2, zone.y + 62);
+        ctx.font = '400 12px Kanit,sans-serif';
+        ctx.fillText(count > 0 ? 'กดปุ่ม ✕ ที่ถังขยะหากต้องการเปลี่ยนรูป' : 'แล้วโยนลงถังเพื่ออัปโหลด', W / 2, zone.y + 82);
+        ctx.restore()
+      }
+      function binBack() {
+        if (anim.gl > .02) { ctx.save(); ctx.globalAlpha = anim.gl * (.28 + .1 * Math.sin(performance.now() / 90)); ctx.fillStyle = OR; ctx.shadowColor = OR; ctx.shadowBlur = 34; ctx.beginPath(); ctx.ellipse(bin.x, bin.ym + 62, bin.hw + 24, 92, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore() }
+        const m = B3.bin, s = unit() / m.ppu, fy = bin.ym + (m.footy - m.rimy) * s;
+        ctx.save(); ctx.translate(bin.x + bin.hw * .16, fy + 2); ctx.scale(1, .2);                       // เงาบนพื้น
+        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, bin.hw * 1.3); g.addColorStop(0, 'rgba(6,78,59,.34)'); g.addColorStop(1, 'rgba(6,78,59,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, bin.hw * 1.3, 0, 7); ctx.fill(); ctx.restore();
+        if (imgOk('bin_back')) ctx.drawImage(IMG.bin_back, bin.x - m.rimx * s, bin.ym - m.rimy * s, m.w * s, m.h * s)
+      }
+      function pile() {
+        if (full < .02) return; const u = unit(); ctx.imageSmoothingQuality = 'high';
+        PILE.forEach((b, i) => {
+          const f = cl((full * 1.5 - i * .15) * (1 - anim.lidT), 0, 1); if (f <= 0) return;
+          const n = TR[i], t = B3[n]; if (!imgOk(n)) return;
+          const sc = u / t.ppu * b[3] * f * .9, bx = bin.x + b[0] * bin.hw * .8, by = bin.ym + 26 + b[1] * .55 + (1 - f) * 40;
+          ctx.save(); ctx.translate(bx, by); ctx.rotate(b[2] * .5); ctx.drawImage(IMG[n], -t.cx * sc, -t.cy * sc, t.w * sc, t.h * sc); ctx.restore()
+        })
+      }
+      function binFront() {
+        const hw = bin.hw, x = bin.x, y = bin.ym, m = B3.bin, s = unit() / m.ppu, hf = (m.footy - m.rimy) * s;
+        ctx.imageSmoothingQuality = 'high';
+        if (imgOk('bin_front')) ctx.drawImage(IMG.bin_front, x - m.rimx * s, y - m.rimy * s, m.w * s, m.h * s);
+        ctx.save(); ctx.translate(x, y + hf * .56); ctx.rotate(-.035);                              // ป้ายแปะชื่อถัง
+        const lw = hw * 1.4, lh = 26;
+        ctx.shadowColor = 'rgba(6,78,59,.3)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+        ctx.fillStyle = '#fffdf2'; ctx.beginPath(); ctx.roundRect(-lw / 2, -lh / 2, lw, lh, 9); ctx.fill(); ctx.shadowColor = 'transparent';
+        ctx.lineWidth = 2; ctx.strokeStyle = full > .5 ? '#f4a29b' : '#7fdcb8'; ctx.stroke();
+        ctx.fillStyle = full > .5 ? '#b93822' : INK; ctx.font = '700 13px Kanit,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(full > .5 ? 'ขยะเต็ม' : 'อัปโหลด', 0, 1); ctx.textBaseline = 'alphabetic'; ctx.restore();
+        if (anim.scanY >= 0 && anim.gl > .05) {                                           // ลำแสงสแกนวิ่งขึ้นลงบนตัวถัง
+          const bw = hw * .65;
+          ctx.save(); ctx.beginPath(); ctx.moveTo(x - hw * .94, y + 8); ctx.lineTo(x - bw, y + hf - 4); ctx.quadraticCurveTo(x, y + hf + 8, x + bw, y + hf - 4); ctx.lineTo(x + hw * .94, y + 8); ctx.quadraticCurveTo(x, y + 20, x - hw * .94, y + 8); ctx.closePath(); ctx.clip();
+          const yy = y + 20 + (hf - 26) * anim.scanY, g = ctx.createLinearGradient(0, yy - 18, 0, yy + 18);
+          g.addColorStop(0, 'rgba(16,185,129,0)'); g.addColorStop(.5, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(16,185,129,0)');
+          ctx.fillStyle = g; ctx.fillRect(x - hw, yy - 18, hw * 2, 36); ctx.strokeStyle = '#d1fae5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - hw, yy); ctx.lineTo(x + hw, yy); ctx.stroke(); ctx.restore()
+        }
+      }
+      /* ฝาถังขยะ — เริ่มมองไม่เห็น (lidA=0) ลอยเข้ามาตอนวิเคราะห์ ปิด/เขย่าด้วย GSAP */
+      function drawLid() {
+        const a = anim.lidA;
+        if (a <= 0.01 || !imgOk('lid')) return;
+        const t = anim.lidT, m = B3.lid, su = unit() / m.ppu;
+        ctx.save();
+        ctx.globalAlpha = a; ctx.imageSmoothingQuality = 'high';
+        ctx.translate(bin.x - bin.hw - 4, bin.ym - 2 - (1 - a) * 36);
+        ctx.rotate(-(1 - t) * 1.8 + anim.lidRot);
+        ctx.drawImage(IMG.lid, bin.hw + 4 - m.cx * su, 2 - m.cy * su, m.w * su, m.h * su);
+        ctx.restore();
+      }
+      function drawItem() {
+        ctx.globalAlpha = Math.min(1, it.cr * 1.5); paper(it.shape, it.x, it.y, it.s * (.75 + .25 * it.cr), it.rot, it.img, it.ext, it.col); ctx.globalAlpha = 1;
+        if (it.st === 'idle' || it.st === 'drag' || it.st === 'back') { ctx.fillStyle = '#065f46'; ctx.font = '500 12px Kanit,sans-serif'; ctx.textAlign = 'center'; const n = it.f.name; ctx.fillText(n.length > 20 ? n.slice(0, 17) + '…' : n, home.x, home.y + PH / 2 + 22) }
+      }
+      function drawAim() {
+        const v = vel(), pull = Math.hypot(it.x - home.x, it.y - home.y); if (pull < 12) return;
+        const ok = v.vy < -500, vx = plan(it.x, it.y, v.vx, v.vy), pts = path(it.x, it.y, vx, v.vy);
+        ctx.strokeStyle = 'rgba(55,65,81,.35)'; ctx.lineWidth = 3; line(home.x, home.y, it.x, it.y);
+        ctx.fillStyle = 'rgba(55,65,81,.35)'; ctx.beginPath(); ctx.arc(home.x, home.y, 5, 0, 7); ctx.fill();
+        pts.forEach((p, i) => { if (i % 2) return; ctx.globalAlpha = 1 - i / pts.length * .6; ctx.fillStyle = ok ? '#374151' : '#9ca3af'; ctx.beginPath(); ctx.arc(p[0], p[1], 3.2, 0, 7); ctx.fill() }); ctx.globalAlpha = 1;
+        ctx.fillStyle = ok ? '#374151' : '#6b7280'; ctx.font = '600 12px Kanit,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(ok ? 'name' : 'ลากถอยลงอีก', it.x, it.y - PH / 2 - 8)
+      }
+
+      /* ขับการสั่นของทั้งถัง (แยกจากฝา) ด้วย transform รอบจุดกึ่งกลางปากถัง */
+      function withBinShake(fn) {
+        const shx = anim.shX || 0, shy = anim.shY || 0, shr = anim.shR || 0, sx = anim.sx || 1, sy = anim.sy || 1, py = bin.ym + 120;   // หมุน/ยุบรอบ "ฐานถัง" ให้ดูตั้งอยู่บนพื้น
+        ctx.save();
+        if (shx || shy || shr || sx !== 1 || sy !== 1) { ctx.translate(bin.x + shx, py + shy); ctx.rotate(shr); ctx.scale(sx, sy); ctx.translate(-bin.x, -py) }
+        fn();
+        ctx.restore();
+      }
+      function drawSparks() {
+        sparks.forEach(p => {
+          ctx.globalAlpha = Math.max(0, Math.min(1, p.l * 1.4)); ctx.fillStyle = p.c;
+          if (p.star) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.l * 6); ctx.beginPath(); for (let i = 0; i < 8; i++) { const r = i % 2 ? p.r * .45 : p.r * 1.5, a = i * Math.PI / 4; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r) } ctx.closePath(); ctx.fill(); ctx.restore() }
+          else { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill() }
+        }); ctx.globalAlpha = 1
+      }
+
+      let last = performance.now();
+      function loop(n) {
+        const dt = Math.min(.033, (n - last) / 1000); last = n; step(dt);
+        ctx.clearRect(0, 0, W, H); drawZone();
+        withBinShake(() => {
+          binBack();
+          dots.forEach(d => { ctx.globalAlpha = d.l * .8; ctx.fillStyle = OR; ctx.beginPath(); ctx.arc(d.x, d.y, 2.6, 0, 7); ctx.fill() }); ctx.globalAlpha = 1;
+          pile();
+        });
+        if (it) { if (it.st === 'drag') drawAim(); drawItem() }
+        withBinShake(() => { binFront(); drawLid() });
+        drawSparks();
+        requestAnimationFrame(loop)
+      }
+      size(); requestAnimationFrame(loop);
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+  <script src="demo.js"></script>
+</body>
+
+</html>

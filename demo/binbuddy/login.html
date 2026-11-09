@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BinBuddy - เข้าสู่ระบบ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body, h1, h2, h3, h4, h5, h6, p, a, span, li, select, input, button {
+            font-family: 'Kanit', sans-serif;
+        }
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #B91C1C;
+            border: 1px solid #EF4444;
+        }
+        .demo-note {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: .8rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- ส่วนล็อกอิน -->
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-green-600"><i class="fas fa-recycle mr-1"></i>BinBuddy</h1>
+                <p class="text-gray-600">เข้าสู่ระบบเพื่อเริ่มการแยกขยะ</p>
+            </div>
+            <!-- เพิ่มส่วนแสดงข้อความแจ้งเตือน (จะถูกแสดงหรือซ่อนโดย JavaScript) -->
+            <div id="loginAlert" class="alert alert-error hidden mb-4">
+                <span id="loginAlertMessage"></span>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700">อีเมล</label>
+                    <input type="email" id="email" class="w-full p-2 border rounded-lg" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700">รหัสผ่าน</label>
+                    <div class="relative">
+                        <input type="password" id="password" autocomplete="current-password" class="w-full p-2 pr-10 border rounded-lg" required>
+                        <button type="button" id="togglePassword" aria-label="แสดง/ซ่อนรหัสผ่าน" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700">
+                            <!-- eye (show) -->
+                            <svg class="w-5 h-5 eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <!-- eye-off (hide) -->
+                            <svg class="w-5 h-5 eye-off hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.05 10.05 0 012.234-3.592M6.18 6.18A9.99 9.99 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.07 10.07 0 01-4.133 5.225M15 12a3 3 0 00-3-3m0 0a3 3 0 013 3m-3-3L3 21m9-12l9 9" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+              
+            </form>
+
+            <!-- ปุ่ม Guest Login (สำหรับเดโมบน GitHub Pages) -->
+            <div class="mt-4">
+                <button type="button" id="guestLogin" class="w-full bg-white border-2 border-green-600 text-green-600 font-semibold p-2 rounded-lg hover:bg-green-50 flex items-center justify-center">
+                    <i class="fas fa-user-clock mr-2"></i>เข้าสู่ระบบแบบผู้เยี่ยมชม
+                </button>
+            </div>
+
+          
+
+            <p class="demo-note">โหมดสาธิต — ข้อมูลทั้งหมดเป็นตัวอย่าง ไม่ได้เชื่อมต่อฐานข้อมูลจริง</p>
+        </div>
+    </div>
+
+    <!-- ส่วนของลืมรหัสผ่าน -->
+    <div id="forgotPasswordForm" class="min-h-screen flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-green-600">ลืมรหัสผ่าน</h1>
+                <p class="text-gray-600">กรุณากรอกอีเมลที่ใช้ลงทะเบียนเพื่อรับลิงก์ตั้งรหัสผ่านใหม่</p>
+            </div>
+            <form id="emailForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700">อีเมล</label>
+                    <input type="email" id="forgotEmail" class="w-full p-2 border rounded-lg" required>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700">
+                    ส่งลิงก์ตั้งรหัสผ่าน
+                </button>
+            </form>
+
+            <!-- ปุ่มกลับไปหน้าเข้าสู่ระบบ -->
+            <div class="text-center mt-4">
+                <button id="backToLogin" class="text-green-600 hover:underline">กลับไปยังหน้าล็อกอิน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginSection   = document.querySelector('#loginForm').closest('.min-h-screen');
+        const forgotSection  = document.getElementById('forgotPasswordForm');
+
+        // โหมดเดโม: ล็อกอินด้วยบัญชีอะไรก็ได้ (กรอกให้ครบ) → เข้าหน้าหลัก
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!email || !password) {
+                showAlert('กรุณากรอกอีเมลและรหัสผ่าน');
+                return;
+            }
+            Swal.fire({
+                title: 'กำลังเข้าสู่ระบบ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            setTimeout(() => { window.location.href = 'home.html'; }, 700);
+        });
+
+        // Guest login → เข้าหน้าหลักทันที
+        document.getElementById('guestLogin').addEventListener('click', function() {
+            window.location.href = 'home.html';
+        });
+
+        // ฟังก์ชันแสดง alert
+        function showAlert(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: message,
+                confirmButtonColor: '#4CAF50'
+            });
+        }
+
+        // แสดงฟอร์มลืมรหัสผ่าน
+        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            loginSection.classList.add('hidden');
+            forgotSection.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // เมื่อกดปุ่มกลับไปหน้าเข้าสู่ระบบ
+        document.getElementById('backToLogin').addEventListener('click', function() {
+            forgotSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ส่งลิงก์ลืมรหัสผ่าน (เดโม: แสดงสำเร็จเสมอ)
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (!email) {
+                Swal.fire({ icon: 'warning', title: 'กรุณากรอกอีเมล', confirmButtonColor: '#4CAF50' });
+                return;
+            }
+            Swal.fire({
+                icon: 'success',
+                title: 'ส่งคำขอแล้ว',
+                text: 'หากอีเมลนี้มีอยู่ในระบบ เราได้ส่งลิงก์ตั้งรหัสผ่านใหม่ให้แล้ว (โหมดเดโม)',
+                confirmButtonColor: '#4CAF50'
+            }).then(() => {
+                document.getElementById('backToLogin').click();
+            });
+        });
+    </script>
+    <script>
+      // Toggle show/hide password
+      (function(){
+        const input = document.getElementById('password');
+        const btn = document.getElementById('togglePassword');
+        if (!input || !btn) return;
+        const eyeOpen = btn.querySelector('.eye-open');
+        const eyeOff  = btn.querySelector('.eye-off');
+        btn.addEventListener('click', ()=>{
+          const show = input.type === 'password';
+          input.type = show ? 'text' : 'password';
+          if (eyeOpen && eyeOff){
+            eyeOpen.classList.toggle('hidden', show);
+            eyeOff.classList.toggle('hidden', !show);
+          }
+        });
+      })();
+    </script>
+</body>
+</html>

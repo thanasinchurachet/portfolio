@@ -1,0 +1,1039 @@
+/* ปรับให้ responsive และรองรับทุกอุปกรณ์ */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+.parent {
+    position: relative;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Prompt', sans-serif;
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+/* คอนเทนเนอร์หลัก */
+.container {
+    flex: 1;
+    max-width: 400px;
+    min-width: 350px;
+    padding: 0.75rem;
+    margin: 0 auto;
+    overflow-y: auto;
+}
+
+/* หัวข้อและปุ่มรีเฟรช */
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4caf50;
+    margin-bottom: 0.5rem;
+}
+
+#today-date {
+    font-size: 0.95rem;
+    color: #6b7280;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+#today-date:hover {
+    background-color: #cdffd1;
+}
+
+#refresh-btn {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+#refresh-btn:hover {
+    color: #4caf50;
+    transform: translateX(3px);
+}
+
+#refresh-btn svg {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+}
+
+/* ปุ่มเลือกวันที่ (ลูกศรซ้าย-ขวา) */
+#prev-date-btn,
+#next-date-btn {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+#prev-date-btn:hover:not(:disabled),
+#next-date-btn:hover:not(:disabled) {
+    background-color: #e8f5e9;
+    transform: scale(1.1);
+}
+
+#prev-date-btn:disabled,
+#next-date-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#prev-date-btn svg,
+#next-date-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* สไตล์สำหรับปฏิทิน */
+/* #date-picker {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+} */
+#date-picker {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 0, 0, 0.5);
+}
+#date-picker {
+    border: 2px solid black;
+}
+
+#date-picker::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+}
+
+/* ข้อความข้อผิดพลาด */
+#error-message {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+/* ส่วนโปรไฟล์ */
+#profile-section {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+#profile-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#profile-section img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4caf50;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#profile-section p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+#greeting-message {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #4caf50;
+    text-align: center;
+    flex: 1;
+    margin: 0 0.5rem;
+}
+
+#results-btn {
+    padding: 0.375rem 1rem;
+    background-color: #4caf50;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+#results-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ส่วนหัวของเมนู */
+.menu-container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: nowrap;
+}
+
+#already-voted {
+    font-size: 0.9rem;
+    color: #4caf50;
+    font-weight: 500;
+    text-align: left;
+    display: none;
+}
+
+#cost-display {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    font-size: 0.85rem;
+    text-align: right;
+    margin-left: auto;
+    transition: all 0.3s ease;
+}
+
+#cost-display.hidden {
+    display: none;
+}
+
+#cost-amount {
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 2rem;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#cost-amount.text-zero {
+    color: #6b7280;
+}
+
+#cost-amount.text-primary {
+    color: #4caf50;
+    text-shadow: 0 0 1px rgba(76, 175, 80, 0.2);
+}
+
+/* เมนูไอเทม */
+.menu-item {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 60px;
+    white-space: normal;
+    overflow: hidden;
+}
+
+.menu-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item.bg-primary-light {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.menu-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
+    flex-wrap: nowrap; /* ป้องกันการตัดบรรทัด */
+}
+.menu-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%; /* ปรับจาก 70% เพื่อให้สมดุลมากขึ้น */
+}
+.menu-item .flex.items-center.space-x-2 {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem; /* ลดระยะห่างระหว่างปุ่ม */
+    flex-shrink: 0; /* ป้องกันการหดตัว */
+}
+
+/* สไตล์สำหรับปุ่มสามจุดและเมนู dropdown */
+.more-options-btn {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    color: #4b5563;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.more-options-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.more-options-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.more-options-menu {
+    position: absolute;
+    top: 1rem;
+    right: 3.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 120px;
+    z-index: 100;
+    display: none;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.more-options-menu.show {
+    display: block;
+}
+
+.more-options-menu button {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #1f2937;
+    background-color: transparent;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.more-options-menu button:hover {
+    background-color: #f3f4f6;
+}
+
+.more-options-menu .edit-option:hover {
+    color: #4caf50;
+}
+
+.more-options-menu .delete-option:hover {
+    color: #ef4444;
+}
+
+/* สไตล์สำหรับ Toast message */
+.fixed {
+    position: fixed;
+}
+
+.bottom-16 {
+    bottom: 4rem;
+}
+
+.left-1\/2 {
+    left: 50%;
+}
+
+.transform {
+    transform: translateX(-50%);
+}
+
+.bg-gray-800 {
+    background-color: #1f2937;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+/* ช่องแก้ไข */
+.edit-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.edit-container .flex.justify-between.mt-3 {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    gap: 0.5rem;
+}
+
+.edit-input,
+#new-menu-price,
+#menu-container .edit-price-input {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+}
+
+#menu-container .edit-price-input,
+#add-menu-form #new-menu-price {
+    padding-left: 0.5rem !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    box-sizing: border-box;
+}
+
+#menu-container .edit-price-input::before,
+#add-menu-form #new-menu-price::before {
+    content: '฿';
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4b5563;
+    font-size: 0.9rem;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 10;
+    line-height: 1;
+}
+
+#menu-container .edit-price-input:focus,
+#add-menu-form #new-menu-price:focus {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1) !important;
+    outline: none !important;
+}
+
+.edit-input:focus,
+#new-menu-price:focus,
+#menu-container .edit-price-input:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    outline: none;
+}
+
+/* ปุ่ม */
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+    border: none;
+}
+
+.delete-btn {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.delete-btn:hover {
+    background-color: #dc2626;
+}
+
+.cancel-btn,
+#modal-cancel {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+    border: none;
+}
+
+.cancel-btn:hover,
+#modal-cancel:hover {
+    background-color: #d1d5db;
+}
+
+.save-btn,
+#modal-confirm {
+    background-color: #4caf50;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+    border: none;
+}
+
+.save-btn:hover,
+#modal-confirm:hover {
+    background-color: #45a049;
+}
+
+/* ผู้โหวต */
+.voters-container {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 24px;
+    margin-top: 0.5rem;
+    margin-left: 0;
+}
+
+.voter-profile-container {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    margin-left: 0;
+}
+
+.voter-profile {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.voter-profile:hover {
+    transform: scale(1.1);
+}
+
+.initials-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #bfdbfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #1e40af;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.initials-circle:hover {
+    transform: scale(1.1);
+}
+
+/* ปุ่มเพิ่ม/ลดจำนวน */
+.quantity-btn {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    color: #4b5563;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    touch-action: manipulation;
+    z-index: 20;
+}
+
+.quantity-btn:hover:not(:disabled) {
+    background-color: #d1d5db;
+}
+
+.quantity-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: #f1f1f1;
+    color: #a1a1a1;
+    border: 1px solid #e0e0e0;
+}
+
+.quantity-display {
+    font-size: 0.9rem;
+    min-width: 1.2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    z-index: 20;
+}
+
+/* ปุ่มเพิ่มเมนู */
+#add-menu-btn {
+    background-color: #4caf50;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+#add-menu-btn:hover {
+    background-color: #45a049;
+}
+
+#add-menu-form {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+#add-menu-form.hidden {
+    display: none;
+}
+
+/* โมดัลยืนยัน */
+#confirmation-modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 100;
+}
+
+#confirmation-modal:not(.hidden) {
+    display: flex;
+}
+
+#confirmation-modal .bg-white {
+    background-color: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 300px;
+}
+
+#modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+#modal-message {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+/* อนิเมชัน */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cost-animation {
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #facc15;
+    font-size: 1.1rem;
+    font-weight: 600;
+    animation: costFade 1s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes costFade {
+    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+    .responsive-font .menu-label,
+    .responsive-font .quantity-display {
+        font-weight: 400;
+        font-size: 12px;
+    }
+    .container {
+        max-width: 500px;
+        padding: 0.75rem;
+    }
+    h1 {
+        font-size: 1.25rem;
+    }
+    .bg-white.rounded-xl.shadow-md.p-4.mb-4 {
+        padding: 0.75rem;
+    }
+    h2.font-medium.text-gray-800.mb-3 {
+        font-size: 1rem;
+    }
+    label.text-gray-600.font-medium {
+        font-size: 0.85rem;
+    }
+    input[type="date"] {
+        font-size: 0.85rem;
+    }
+    #delete-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+    }
+    .menu-item {
+        padding: 0.5rem;
+    }
+    #menu-dates-container {
+        max-height: 150px;
+    }
+    #menu-dates-container .flex.items-center.justify-between {
+        padding: 0.5rem;
+    }
+    .view-details-btn, .delete-date-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .date-checkbox {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+    .voter-profile, .initials-circle {
+        width: 20px;
+        height: 20px;
+    }
+    .more-options-menu {
+        min-width: 100px;
+        right: 0.25rem;
+    }
+    #profile-section {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    #profile-content {
+        justify-content: center;
+    }
+    #greeting-message {
+        font-size: 0.8rem;
+        margin: 0.25rem 0;
+    }
+    #results-btn {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    .quantity-btn {
+        width: 33px;
+        height: 33px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 340px) {
+    .container {
+        padding: 0.5rem; /* ลด padding เพื่อให้มีพื้นที่มากขึ้น */
+        margin-left: 0;
+        margin-right: 0;
+        min-width: 300px; /* ลดขนาดขั้นต่ำของ container */
+    }
+    .text-base {
+        font-size: 0.6rem;
+        line-height: 0rem;
+    }
+
+    .menu-item {
+        padding: 0.5rem;
+        min-height: 48px; /* ลดความสูงขั้นต่ำ */
+    }
+
+    .menu-content {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem; /* ลดระยะห่างระหว่างชื่อเมนูและผู้โหวต */
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .menu-label {
+        font-size: 0.75rem; /* ลดขนาดตัวอักษร */
+        max-width: 50%; /* ลด max-width เพื่อให้มีที่ว่างสำหรับส่วนอื่น */
+        line-height: 1.2;
+    }
+
+    .voters-container {
+        min-height: 20px;
+        margin-top: 0.25rem;
+    }
+
+    .voter-profile, .initials-circle {
+        width: 18px;
+        height: 18px;
+    }
+
+    .quantity-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.65rem;
+    }
+
+    .quantity-display {
+        font-size: 0.65rem;
+        min-width: 1rem;
+    }
+
+    .more-options-btn {
+        padding: 0.25rem;
+    }
+
+    .more-options-btn svg {
+        width: 16px; /* ลดขนาด SVG */
+        height: 16px;
+    }
+
+    .more-options-menu {
+        right: 0.5rem; /* ปรับตำแหน่งให้ชิดขอบมากขึ้น */
+        min-width: 90px; /* ลดขนาดเมนู dropdown */
+        top: 0.5rem;
+    }
+
+    .more-options-menu button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    .menu-item .flex.items-center.space-x-2 {
+        gap: 0.15rem; /* ลดระยะห่างเพิ่มเติมสำหรับหน้าจอเล็ก */
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 600px;
+        padding: 1.5rem;
+    }
+    #profile-section {
+        padding: 1rem;
+    }
+    #profile-section img {
+        width: 56px;
+        height: 56px;
+    }
+    #profile-section p {
+        font-size: 1.1rem;
+    }
+    #greeting-message {
+        font-size: 0.9rem;
+    }
+    #results-btn {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    .menu-item {
+        padding: 1rem;
+    }
+    .menu-label {
+        font-size: 1rem;
+    }
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+}
+
+/* ข้อความสำเร็จ */
+#success-message {
+    background-color: #e8f5e9;
+    color: #4caf50;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    display: none;
+}
+
+/* ปรับแต่ง input type="date" */
+input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    width: 100%;
+    background-color: #ffffff;
+    color: #1f2937;
+    transition: all 0.3s ease;
+}
+
+input[type="date"]:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    outline: none;
+}
+
+/* ปรับแต่งส่วนวันที่ที่มีเมนู */
+#menu-dates-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    padding: 0.5rem;
+}
+
+#menu-dates-container .flex.items-center.justify-between {
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+#menu-dates-container .flex.items-center.justify-between:hover {
+    background-color: #f3f4f6;
+}
+
+/* ปุ่มในส่วนวันที่ */
+.view-details-btn {
+    background-color: #4caf50;
+    color: #ffffff;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.view-details-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-date-btn {
+    background-color: #ef4444;
+    color: #ffffff;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.delete-date-btn:hover {
+    background-color: #dc2626;
+}
+
+/* สไตล์สำหรับ checkbox */
+.date-checkbox {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: #4caf50;
+}
+
+/* สไตล์สำหรับ modal รายละเอียด */
+#details-modal-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+#details-modal-content h3 {
+    color: #2d3748;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#details-modal-content ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+#details-modal-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    color: #4b5563;
+}
+
+/* ปุ่มสามจุดใน modal */
+.more-options-btn {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    color: #4b5563;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    z-index: 30;
+}
+
+.more-options-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+.more-options-menu.show {
+    display: block;
+}

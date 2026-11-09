@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<script src="js/demo-shim.js?v=2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Vote × LINE — เดโม</title>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600&family=Bagel+Fat+One&family=Gaegu:wght@400;700&family=Mitr:wght@400;500;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================================================================
+     Storyboard: four screens in a row, like a product shot — the active one big in the middle, the others
+     smaller and tilted at the sides. Each step of the real pipeline slides the next screen in:
+       1 admin types the menu to the bot  →  2 AI (n8n) splits it  →  3 member gets the poll and votes  →  4 summary
+     Paper-cut stage (kraft table, cream sheets), LINE look only inside the phones.
+     ===================================================================================================== */
+  :root { --ink: #264a3c; --cream: #fff4d9; --cream2: #fffaf0; --kraft: #d9b983; --kraft-d: #b89a68; --marker: #fbbf24; --coral: #e77d79; --brown: #6b5442; --line: #06c755; --bg: #8fa9d3;
+          --pw: clamp(250px, calc((100vh - 210px) / 1.86), 350px); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: Anuphan, Prompt, system-ui, sans-serif; color: #2b2118; }
+  body { display: flex; flex-direction: column; overflow: hidden; background:
+      radial-gradient(1100px 520px at 50% 115%, rgba(255, 244, 217, .7), transparent 70%),
+      repeating-linear-gradient(115deg, rgba(120, 85, 40, .045) 0 2px, transparent 2px 7px), var(--kraft); }
+  :focus-visible { outline: 3px dashed var(--coral); outline-offset: 3px; }
+
+  /* ---- top: title, the 4 steps, restart ---- */
+  .top { flex: none; display: flex; align-items: center; gap: 12px 22px; flex-wrap: wrap; padding: 14px 22px 4px; }
+  .top h1 { margin: 0; font: 600 clamp(20px, 2.4vw, 28px)/1.2 Mitr, sans-serif; color: var(--ink); }
+  .top h1 .demo { display: block; font: 500 12.5px Anuphan, sans-serif; color: #92400e; }
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; flex: 1; justify-content: center; }
+  .steps button { display: flex; align-items: center; gap: 8px; border: 2px solid var(--kraft-d); background: var(--cream2); color: var(--brown); border-radius: 999px; padding: 4px 14px 4px 5px; font: 500 14.5px Mitr, sans-serif; cursor: pointer; transition: all .25s; }
+  .steps b { width: 27px; height: 27px; border-radius: 50%; background: #ead9b4; display: grid; place-items: center; font: 400 15px "Bagel Fat One", sans-serif; }
+  .steps button.on { background: #fef3c7; border-color: #f59e0b; color: var(--ink); box-shadow: 0 0 0 4px rgba(245, 158, 11, .25); } .steps button.on b { background: #f59e0b; color: #fff; }
+  .steps button.done { border-color: #16a34a; color: #166534; } .steps button.done b { background: #16a34a; color: #fff; }
+  .btn { font: 600 15px Mitr, sans-serif; padding: 8px 18px; border: 2.5px solid var(--ink); color: var(--ink); background: var(--cream); cursor: pointer; border-radius: 18px 8px 16px 10px; box-shadow: 3px 4px 0 var(--ink); }
+  .btn:hover { transform: translate(-1px, -2px); box-shadow: 4px 6px 0 var(--ink); } .btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+
+  /* ---- the stage: a track of slides, centred on the active one ---- */
+  .stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+  .track { position: absolute; top: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: 46px; padding: 0 60px; transition: transform .75s cubic-bezier(.65, 0, .25, 1); }
+  .slide { position: relative; flex: none; width: calc(var(--pw) + 24px); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: transform .75s cubic-bezier(.65, 0, .25, 1), opacity .5s, filter .5s; }
+  .slide:not(.on) { transform: scale(.8) rotate(var(--tilt, -4deg)); opacity: .62; filter: saturate(.7); cursor: pointer; }
+  .slide:nth-child(even) { --tilt: 4deg; }
+  .slide:not(.on) > * { pointer-events: none; }
+  .cap { min-height: 2.6em; display: flex; align-items: center; gap: 10px; font: 500 clamp(16px, 1.6vw, 20px)/1.3 Mitr, sans-serif; color: var(--ink); text-align: left; }
+  .cap b { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--coral); color: #fff; display: grid; place-items: center; font: 400 21px "Bagel Fat One", sans-serif; box-shadow: 2px 3px 0 var(--ink); }
+  .arrow { position: absolute; z-index: 40; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--cream); color: var(--ink); font-size: 24px; cursor: pointer; box-shadow: 2px 3px 0 var(--ink); }
+  .arrow.l { left: 14px; } .arrow.r { right: 14px; } .arrow:disabled { opacity: .3; cursor: default; }
+
+  /* ---- the AI / summary "screens": same frame as a phone, cream paper inside ---- */
+  .frame { position: relative; width: var(--pw); height: calc(var(--pw) * 1.86); border-radius: 44px; padding: 12px; background: linear-gradient(160deg, #2e2e2e, #0c0c0c); box-shadow: 0 26px 48px rgba(60, 40, 10, .45), inset 0 0 0 2px #3d3d3d; }
+  .frame > .in { width: 100%; height: 100%; border-radius: 33px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .ai .in { background: radial-gradient(circle at 50% 38%, #fff8e6 0 30%, #f6e2b5 75%); padding: 26px 18px 18px; }
+  .ai h3, .sum h3 { margin: 0; font: 600 calc(var(--pw) * .068)/1.25 Mitr, sans-serif; color: var(--ink); }
+  .ai .st { font-size: calc(var(--pw) * .044); color: var(--brown); min-height: 2.6em; margin: 4px 0 0; }
+  .orbit { position: relative; width: 100%; flex: 1; min-height: 0; display: grid; place-items: center; }
+  .bot3d { position: relative; z-index: 2; width: 52%; max-width: 190px; aspect-ratio: 1; display: grid; place-items: center; }
+  .bot3d img, .bot3d svg { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 14px 12px rgba(80, 50, 10, .3)); }
+  .ai.working .bot3d { animation: bob 1.1s ease-in-out infinite alternate; }
+  .ai.done .bot3d { animation: hop .6s; }
+  .dish { position: absolute; z-index: 3; width: 30%; max-width: 104px; left: 50%; top: 50%; margin: -15% 0 0 -15%; opacity: 0; transition: opacity .4s; }
+  .dish img { width: 100%; display: block; filter: drop-shadow(0 8px 7px rgba(80, 50, 10, .28)); }
+  .dish i { display: block; font-size: calc(var(--pw) * .16); font-style: normal; text-align: center; }
+  .ai.working .dish { opacity: 1; animation: orbit 3.2s linear infinite; animation-delay: calc(var(--k) * -0.8s); }
+  .ai.done .dish { opacity: 0; }
+  @keyframes orbit { from { transform: rotate(0deg) translateX(calc(var(--pw) * .34)) rotate(0deg) scale(.85); } 50% { transform: rotate(180deg) translateX(calc(var(--pw) * .34)) rotate(-180deg) scale(1.05); } to { transform: rotate(360deg) translateX(calc(var(--pw) * .34)) rotate(-360deg) scale(.85); } }
+  @keyframes bob { from { transform: translateY(-5px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
+  @keyframes hop { 40% { transform: translateY(-14px); } }
+  .bar { width: 82%; height: 12px; background: rgba(38, 74, 60, .15); border-radius: 99px; overflow: hidden; flex: none; margin: 8px 0 4px; } .bar i { display: block; height: 100%; width: 0; background: var(--marker); border-radius: 99px; }
+  .ai.working .bar i { width: 100%; transition: width 2.6s linear; } .ai.done .bar i { width: 100%; background: #4ade80; }
+  .menuout { list-style: none; margin: 8px 0 0; padding: 0; width: 100%; text-align: left; font-size: calc(var(--pw) * .043); max-height: 0; overflow: hidden; transition: max-height .6s; }
+  .ai.done .menuout { max-height: 60%; }
+  .ai.done .orbit { flex: 0 0 34%; }
+  .menuout li { display: flex; align-items: center; gap: 8px; padding: 5px 4px; border-bottom: 2px dotted var(--kraft-d); animation: rise .4s both; animation-delay: calc(var(--k) * .12s); }
+  .menuout li img, .menuout li .em { width: 34px; height: 34px; object-fit: contain; flex: none; font-size: 24px; text-align: center; } .menuout li span { flex: 1; } .menuout li b { font: 600 1em Mitr, sans-serif; color: #b45309; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .sum .in { background: #ecfdf3; padding: 24px 16px 16px; }
+  .sum .big { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 6px; }
+  .sum .big img { width: 46%; max-width: 150px; filter: drop-shadow(0 12px 10px rgba(0, 60, 30, .25)); animation: bob 1.6s ease-in-out infinite alternate; }
+  .sum .win { font: 600 calc(var(--pw) * .055)/1.3 Mitr, sans-serif; color: #166534; }
+  .sum .rows { width: 100%; text-align: left; margin-top: 8px; overflow: auto; font-size: calc(var(--pw) * .042); }
+  .sum .rows div { display: flex; align-items: center; gap: 8px; padding: 4px 2px; } .sum .rows .bar2 { flex: 1; height: 10px; background: #d1fae5; border-radius: 9px; overflow: hidden; } .sum .rows .bar2 i { display: block; height: 100%; background: #16a34a; border-radius: 9px; transition: width .6s; }
+  .sum .rows span { width: 44%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .sum .rows b { width: 2.2em; text-align: right; color: #166534; }
+  .sum .tot { margin-top: auto; padding-top: 8px; font-size: calc(var(--pw) * .04); color: #3f6b55; }
+  .sum .again { margin-top: 10px; }
+
+  /* ---- phone (LINE look, intentionally not paper) ---- */
+  .phone { position: relative; width: var(--pw); height: calc(var(--pw) * 1.86); background: linear-gradient(160deg, #2e2e2e, #0c0c0c); border-radius: 44px; padding: 12px; box-shadow: 0 26px 48px rgba(60, 40, 10, .45), inset 0 0 0 2px #3d3d3d; text-align: left; font-family: Prompt, sans-serif; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 33px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .status { height: 32px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 8px 22px 0; font-size: 12px; font-weight: 600; background: #fff; }
+  .hd { flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 15px; background: #fff; } .hd small { font-weight: 400; color: #6b7280; font-size: 12px; display: block; }
+  .tabs { display: flex; border-bottom: 1px solid #e5e7eb; background: #fff; flex: none; } .tabs button { flex: 1; border: 0; background: none; padding: 8px 4px; font: 500 13.5px Prompt, sans-serif; color: #6b7280; border-bottom: 2.5px solid transparent; cursor: pointer; }
+  .tabs button.on { color: #059669; border-bottom-color: var(--line); } .tabs .dot { margin-left: 5px; display: inline-block; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: #ef4444; color: #fff; font-size: 10.5px; line-height: 17px; text-align: center; } .tabs .dot[hidden] { display: none; }
+  .av { width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 19px; background: #e0f2e9; overflow: hidden; }
+  .chat { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--bg); padding: 12px 10px 8px; display: flex; flex-direction: column; gap: 9px; scroll-behavior: smooth; }
+  .m { display: flex; gap: 6px; max-width: 92%; align-items: flex-end; } .m.me { align-self: flex-end; flex-direction: row-reverse; } .m .who { font-size: 12px; color: #334155; margin: 0 0 2px 2px; }
+  .bub { background: #fff; border-radius: 15px; padding: 8px 12px; font-size: 14px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; box-shadow: 0 1px 1px rgba(0,0,0,.08); } .me .bub { background: var(--line); color: #fff; }
+  .time { font-size: 10.5px; color: #475569; align-self: flex-end; white-space: nowrap; }
+  .sysmsg { align-self: center; background: rgba(0,0,0,.25); color: #fff; font-size: 12px; border-radius: 999px; padding: 3px 13px; text-align: center; }
+  .card { background: #fff; border-radius: 15px; overflow: hidden; width: min(250px, 100%); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .card .cp { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; padding: 9px 13px; font-weight: 600; font-size: 14.5px; } .card .cp small { display: block; font-weight: 400; opacity: .9; font-size: 12px; }
+  .card .bd { padding: 8px 13px; font-size: 13.5px; } .card ul { list-style: none; margin: 0; padding: 0; } .card li { display: flex; justify-content: space-between; gap: 6px; padding: 3px 0; border-bottom: 1px dashed #e5e7eb; } .card .cnt { margin-top: 6px; color: #6b7280; font-size: 12.5px; }
+  .card .go { display: block; width: 100%; border: 0; border-top: 1px solid #e5e7eb; background: #fff; color: #06a94d; font: 600 15px Prompt, sans-serif; padding: 11px; cursor: pointer; } .card .go:hover { background: #f0fdf4; }
+  .typing { align-self: flex-start; background: #fff; border-radius: 15px; padding: 6px 12px; font-size: 16px; letter-spacing: 2px; color: #94a3b8; animation: bl 1s infinite; } @keyframes bl { 50% { opacity: .4; } }
+  .inp { flex: none; background: #fff; border-top: 1px solid #e5e7eb; padding: 6px 7px 9px; }
+  .send { display: flex; gap: 6px; align-items: flex-end; } .send textarea { flex: 1; resize: none; border: 1px solid #d1d5db; border-radius: 18px; padding: 8px 12px; font: 14px/1.45 Prompt, sans-serif; min-height: 40px; max-height: 172px; overflow-y: auto; }
+  .send button { border: 0; background: var(--line); color: #fff; border-radius: 50%; width: 42px; height: 42px; font-size: 16px; cursor: pointer; flex: none; }
+  .send button:disabled { background: #cbd5e1; cursor: default; }
+  .banner { position: absolute; z-index: 20; left: 8px; right: 8px; top: 36px; transform: translateY(-160%); transition: transform .4s cubic-bezier(.3, 1.4, .5, 1); background: rgba(30,30,30,.94); color: #fff; border-radius: 14px; padding: 10px 12px; display: flex; gap: 9px; align-items: center; font-size: 13.5px; cursor: pointer; }
+  .banner.show { transform: none; } .banner .av { background: #fff; } .banner b { display: block; font-size: 11.5px; opacity: .8; font-weight: 500; }
+  .sheetx { position: absolute; z-index: 30; inset: 32px 0 0 0; background: #fff; transform: translateY(105%); transition: transform .35s, visibility 0s .35s; visibility: hidden; display: flex; flex-direction: column; border-radius: 14px 14px 0 0; }
+  .sheetx.on { transform: none; visibility: visible; transition: transform .35s; } .sheetx .hd { justify-content: space-between; }
+  .sheetx .vw { flex: 1; position: relative; overflow: hidden; }
+  .sheetx iframe { position: absolute; left: 0; top: 0; border: 0; width: 375px; transform-origin: 0 0; }   /* the vote page renders at a real phone width, scaled to fit */
+  .card li b { white-space: nowrap; }
+  .x { border: 0; background: #f3f4f6; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 14px; }
+
+  /* ---- guide ring: points at the next thing to press ---- */
+  .gring { position: fixed; z-index: 9990; pointer-events: none; border: 3px dashed #e11d48; background: rgba(251, 191, 36, .18); animation: ringp 1.3s ease-out infinite; transition: left .2s, top .2s, width .2s, height .2s; }
+  @keyframes ringp { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, .55); } 80%, 100% { box-shadow: 0 0 0 14px rgba(225, 29, 72, 0); } }
+  .glabel { position: fixed; z-index: 9991; pointer-events: none; transform: translate(-50%, 0); background: #e11d48; color: #fff; font: 500 15px Mitr, sans-serif; padding: 6px 15px; border-radius: 999px; white-space: nowrap; box-shadow: 0 6px 14px rgba(0, 0, 0, .3); }
+  .glabel::after { content: ""; position: absolute; left: 50%; margin-left: -7px; border: 7px solid transparent; }
+  .glabel.up::after { top: 100%; border-top-color: #e11d48; } .glabel.down::after { bottom: 100%; border-bottom-color: #e11d48; }
+  .gring[hidden], .glabel[hidden] { display: none; }
+
+  @media (max-width: 700px) {
+    :root { --pw: min(300px, calc(100vw - 70px), calc((100vh - 230px) / 1.86)); }
+    .top { padding: 10px 12px 2px; gap: 6px 10px; flex-wrap: nowrap; } .top h1 { font-size: 17px; flex: 1; } .top h1 .demo { font-size: 11px; }
+    .steps { flex: none; gap: 4px; flex-wrap: nowrap; } .steps button { font-size: 0; padding: 2px; gap: 0; border-width: 1.5px; } .steps b { width: 24px; height: 24px; font-size: 13px; }
+    .top .btn { font-size: 0; padding: 6px 10px; } .top .btn::before { content: "↺"; font-size: 17px; }
+    .track { gap: 18px; padding: 0 30px; } .arrow { width: 40px; height: 40px; font-size: 18px; } .arrow.l { left: 4px; } .arrow.r { right: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .gring { animation: none; } }
+</style>
+</head>
+<body>
+  <div class="top">
+    <h1>ระบบโหวตอาหารผ่าน LINE <small class="demo">เดโมจำลอง · ข้อมูลตัวอย่าง</small></h1>
+    <ol class="steps" id="steps">
+      <li><button type="button" data-go="0"><b>1</b>แอดมินส่งเมนู</button></li><li><button type="button" data-go="1"><b>2</b>AI แยกรายการ</button></li><li><button type="button" data-go="2"><b>3</b>สมาชิกโหวต</button></li><li><button type="button" data-go="3"><b>4</b>สรุปผล</button></li>
+    </ol>
+    <button class="btn" id="reset" type="button" aria-label="เริ่มใหม่"><span>↺ เริ่มใหม่</span></button>
+  </div>
+
+  <div class="stage" id="stage">
+    <button class="arrow l" id="prev" type="button" aria-label="หน้าจอก่อนหน้า">‹</button>
+    <button class="arrow r" id="next" type="button" aria-label="หน้าจอถัดไป">›</button>
+    <div class="track" id="track">
+      <section class="slide" data-i="0" aria-label="ขั้นที่ 1 แอดมิน">
+        <div class="cap"><b>1</b>พิมพ์รายการอาหาร ส่งให้ AI วิเคราะห์</div>
+        <div class="phone" id="phA"></div>
+      </section>
+      <section class="slide" data-i="1" aria-label="ขั้นที่ 2 AI">
+        <div class="cap"><b>2</b>AI แยกรายการอาหาร</div>
+        <div class="frame ai" id="ai"><div class="in">
+          <h3>n8n + AI</h3>
+          <p class="st" id="aiSt">รอรายการอาหารจากแอดมิน</p>
+          <div class="orbit" id="orbit">
+            <div class="bot3d" id="bot3d"></div>
+          </div>
+          <div class="bar"><i></i></div>
+          <ul class="menuout" id="outList"></ul>
+        </div></div>
+      </section>
+      <section class="slide" data-i="2" aria-label="ขั้นที่ 3 สมาชิก">
+        <div class="cap"><b>3</b>รับการแจ้งเตือน และเลือกรายการอาหาร</div>
+        <div class="phone" id="phM"></div>
+      </section>
+      <section class="slide" data-i="3" aria-label="ขั้นที่ 4 สรุปผล">
+        <div class="cap"><b>4</b>สรุปผลโหวตวันนี้</div>
+        <div class="frame sum" id="sum"><div class="in">
+          <h3>ผลโหวตวันนี้</h3>
+          <div class="big" id="sumBig"></div>
+          <div class="win" id="sumWin">ยังไม่มีผลโหวต</div>
+          <div class="rows" id="sumRows"></div>
+          <div class="tot" id="sumTot"></div>
+          <button class="btn again" type="button" id="again">↺ ลองอีกรอบ</button>
+        </div></div>
+      </section>
+    </div>
+  </div>
+
+<div class="gring" id="gring" hidden></div><div class="glabel" id="glabel" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  window.__fvNoBanner = true;
+  var D = window.__fvDemo, db = firebase.database(), LS = "fv_story_v1", today = D.bkkDate(0), U = D.USERS, DEFAULT_PRICE = 20, GROUP = "Cdemo00000000000000000000000001";
+  var $ = function (s, r) { return (r || document).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var hhmm = function () { var d = new Date(); return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var dateTh = function () { return new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" }); };
+  var MENU_SAMPLE = "กะเพราหมูสับไข่ดาว\nข้าวมันไก่\nก๋วยเตี๋ยวหมูน้ำตก\nผัดซีอิ๊วหมู";
+
+  // ---------------------------------------------------------------- 3D pictures (clay renders from Blender; emoji if a file is missing)
+  var IMG = "assets/3d/", BOT = IMG + "robot.webp";
+  var DISHES = [[/กะเพรา/, "kaprao", "🍳"], [/มันไก่/, "khaomankai", "🍗"], [/ก๋วยเตี๋ยว|น้ำตก|บะหมี่|ราเมง/, "noodle", "🍜"], [/ซีอิ๊ว|ผัด/, "padsiew", "🥡"]];
+  function dishOf(name) { for (var i = 0; i < DISHES.length; i++) if (DISHES[i][0].test(name)) return DISHES[i]; return [null, "plate", "🍽️"]; }
+  function pic(name, cls) {
+    var d = dishOf(name), im = document.createElement("img"); im.src = IMG + d[1] + ".webp"; im.alt = ""; if (cls) im.className = cls;
+    im.onerror = function () { var s = document.createElement("i"); s.className = "em"; s.textContent = d[2]; im.replaceWith(s); };
+    return im;
+  }
+  (function () {
+    var b = $("#bot3d"), im = new Image(); im.alt = "AI"; im.src = BOT;
+    im.onerror = function () { b.innerHTML = '<svg viewBox="0 0 80 80" aria-hidden="true"><line x1="40" y1="6" x2="40" y2="16" stroke="#264a3c" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="6" r="4.5" fill="#fbbf24"/><rect x="12" y="16" width="56" height="46" rx="14" fill="#fff4d9" stroke="#264a3c" stroke-width="3.5"/><rect x="19" y="28" width="42" height="18" rx="9" fill="#264a3c"/><circle cx="31" cy="37" r="4.2" fill="#6ee7b7"/><circle cx="49" cy="37" r="4.2" fill="#6ee7b7"/><path d="M31 53 q9 6 18 0" fill="none" stroke="#264a3c" stroke-width="3" stroke-linecap="round"/></svg>'; };
+    b.appendChild(im);
+    MENU_SAMPLE.split("\n").forEach(function (n, k) { var d = document.createElement("div"); d.className = "dish"; d.style.setProperty("--k", k); d.appendChild(pic(n)); $("#orbit").appendChild(d); });
+  })();
+
+  // ---------------------------------------------------------------- slides
+  var cur = 0, slides = $$(".slide"), track = $("#track"), stage = $("#stage"), stepBtns = $$("#steps button");
+  var S = { at: 0, group: [{ from: "sys", kind: "sys", text: "อิ่มท้อง อยู่ในกลุ่มนี้แล้ว" }],
+            dm: { admin: [{ from: "bot", kind: "text", text: "สวัสดีแอดมิน 👋\nส่งรายการอาหารมาได้เลย หนึ่งเมนูต่อบรรทัด" }], member: [{ from: "bot", kind: "text", text: "สวัสดี! ฉันคืออิ่มท้อง 🍜 เมื่อมีโพลเมนูใหม่ ฉันจะแจ้งที่นี่" }] },
+            polled: false, voted: "", reached: 0 };
+  try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); if (o && o.group) S = o; } } catch (e) { }
+  function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { } }
+  function go(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i)); S.reached = Math.max(S.reached || 0, cur); save();
+    slides.forEach(function (s, k) { var on = k === cur; s.classList.toggle("on", on); if (on) s.removeAttribute("inert"); else s.setAttribute("inert", ""); });
+    var s = slides[cur], x = stage.clientWidth / 2 - (s.offsetLeft + s.offsetWidth / 2);
+    track.style.transform = "translateX(" + x + "px)";
+    stepBtns.forEach(function (b, k) { b.classList.toggle("on", k === cur); b.classList.toggle("done", k < cur || (k <= S.reached && k !== cur)); });
+    $("#prev").disabled = cur === 0; $("#next").disabled = cur === slides.length - 1;
+    if (cur === 3) paintSummary();
+  }
+  slides.forEach(function (s, k) { s.addEventListener("click", function () { if (k !== cur) go(k); }); });
+  stepBtns.forEach(function (b) { b.onclick = function () { go(+b.dataset.go); }; });
+  $("#prev").onclick = function () { go(cur - 1); }; $("#next").onclick = function () { go(cur + 1); };
+  addEventListener("keydown", function (e) { if (e.target.closest && e.target.closest("textarea")) return; if (e.key === "ArrowRight") go(cur + 1); if (e.key === "ArrowLeft") go(cur - 1); });
+  addEventListener("resize", function () { go(cur); });
+  var sx = null; stage.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", function (e) { if (sx == null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60 && !e.target.closest(".chat,.sheetx")) go(cur + (dx < 0 ? 1 : -1)); sx = null; });
+
+  // ---------------------------------------------------------------- phones (admin = DM with the bot only; member = group + bot tabs)
+  function fit(ta) { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight + 2, 172) + "px"; }
+  function Phone(el, role) {
+    this.el = el; this.role = role; this.tab = role === "admin" ? "dm" : "group"; this.unread = { group: 0, dm: 0 }; var me = this, admin = role === "admin";
+    el.innerHTML = '<div class="screen"><div class="status"><span>' + hhmm() + '</span><span>LINE ▪▪▪</span></div>' +
+      '<div class="banner"><div class="av">🍜</div><div><b class="bw">อิ่มท้อง</b><span class="bt"></span></div></div>' +
+      '<div class="hd"><div class="av">' + (admin ? "🍜" : "👥") + '</div><div><span class="ttl">' + (admin ? "อิ่มท้อง" : "ทีมกินข้าว · Logicton") + "</span><small>" + (admin ? "แชทส่วนตัวกับบอท" : "สมาชิก 11 คน") + "</small></div></div>" +
+      (admin ? "" : '<div class="tabs"><button data-tab="group" class="on">กลุ่ม<span class="dot" hidden></span></button><button data-tab="dm">อิ่มท้อง<span class="dot" hidden></span></button></div>') +
+      '<div class="chat"></div>' + (admin ? '<div class="inp"><div class="send"><textarea rows="1" aria-label="ข้อความถึงบอท"></textarea><button aria-label="ส่ง">➤</button></div></div>' : "") +
+      (admin ? "" : '<div class="sheetx"><div class="hd"><span>โหวตเมนูอาหาร</span><button class="x" aria-label="ปิดหน้าโหวต">✕</button></div><div class="vw"><iframe title="หน้าโหวต" src="about:blank"></iframe></div></div>') + "</div>";
+    this.chat = $(".chat", el);
+    $$(".tabs button", el).forEach(function (b) { b.onclick = function () { me.setTab(b.dataset.tab); }; });
+    if (admin) {
+      this.ta = $("textarea", el); this.sendBtn = $(".send button", el);
+      this.sendBtn.onclick = function () { me.send(me.ta.value); };
+      this.ta.oninput = function () { fit(me.ta); };
+      this.ta.onkeydown = function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); me.send(me.ta.value); } };
+    }
+    if (!admin) $(".x", el).onclick = function () { me.closeSheet(); };
+    this.render();
+  }
+  Phone.prototype.msgs = function () { return this.tab === "group" ? S.group : S.dm[this.role]; };
+  Phone.prototype.setTab = function (t) { this.tab = t; this.unread[t] = 0; $$(".tabs button", this.el).forEach(function (b) { b.classList.toggle("on", b.dataset.tab === t); }); $(".ttl", this.el).textContent = t === "group" ? "ทีมกินข้าว · Logicton" : "อิ่มท้อง"; $(".hd small", this.el).textContent = t === "group" ? "สมาชิก 11 คน" : "แชทส่วนตัวกับบอท"; this.render(); };
+  Phone.prototype.render = function () {
+    var role = this.role, me = this;
+    this.chat.innerHTML = this.msgs().map(function (m) { return msgHTML(m, role); }).join("");
+    $$("[data-act=vote]", this.chat).forEach(function (b) { b.onclick = function () { me.openSheet(); }; });
+    ["group", "dm"].forEach(function (k) { var d = $('.tabs [data-tab="' + k + '"] .dot', me.el); if (d) { d.hidden = !me.unread[k]; d.textContent = me.unread[k]; } });
+    this.chat.scrollTop = this.chat.scrollHeight; updateCounts();
+  };
+  Phone.prototype.banner = function (title, text, tab) {
+    var b = $(".banner", this.el), me = this; $(".bw", b).textContent = title; $(".bt", b).textContent = text;
+    b.onclick = function () { me.setTab(tab); b.classList.remove("show"); }; b.classList.add("show"); clearTimeout(this.bt); this.bt = setTimeout(function () { b.classList.remove("show"); }, 5200);
+  };
+  function fitFrame(el) { var vw = $(".vw", el), fr = vw && $("iframe", vw); if (!fr) return; var k = vw.clientWidth / 375; fr.style.transform = "scale(" + k + ")"; fr.style.height = (vw.clientHeight / k) + "px"; }
+  addEventListener("resize", function () { fitFrame($("#phM")); });
+  Phone.prototype.openSheet = function () { D.flush(); var el = this.el; setTimeout(function () { fitFrame(el); }, 0); setTimeout(function () { fitFrame(el); }, 400); $("iframe", this.el).src = "index.html?embed=1&as=" + this.role + "&t=" + Date.now(); $(".sheetx", this.el).classList.add("on"); };
+  Phone.prototype.closeSheet = async function () {
+    var el = this.el, role = this.role; $(".sheetx", el).classList.remove("on"); await sleep(350); $("iframe", el).src = "about:blank"; D.reload();
+    var uid = U[role].userId, v = (await db.ref("/votes/" + today + "/" + uid).once("value")).val(), ex = (await db.ref("/additional_votes/" + today + "/" + uid).once("value")).val();
+    var n = ex ? Object.keys(ex).length : 0, sig = (v ? v.menuId : "") + "-" + n;
+    if ((v || n) && S.voted !== sig) {
+      S.voted = sig; var menu = (await db.ref("/menus/" + today).once("value")).val(), nm = v && menu && menu.items && menu.items[v.menuId] ? menu.items[v.menuId].name : "";
+      pushDM("member", { from: "bot", kind: "text", text: "บันทึกการโหวตของคุณแล้ว ✅" + (nm ? "\n• " + nm : "") + (n ? "\nและรายการเพิ่มเติม " + n + " รายการ" : "") });
+      await sleep(1500); go(3);                                                          // the vote is saved: slide to the summary
+    }
+  };
+  Phone.prototype.send = function (raw) {
+    var text = (raw || "").trim(); if (!text || busy) return; this.ta.value = ""; fit(this.ta);
+    pushDM("admin", { from: "admin", kind: "text", text: text }); handleAdmin(text);
+  };
+  function msgHTML(m, role) {
+    if (m.kind === "sys") return '<div class="sysmsg">' + esc(m.text) + "</div>";
+    var mine = m.from === role, body, who = mine ? "" : '<div class="who">' + esc(m.from === "bot" ? "อิ่มท้อง" : (m.name || "")) + "</div>";
+    if (m.kind === "poll") body = '<div class="card"><div class="cp">🍽️ โหวตเมนูอาหาร<small>' + esc(m.data.dateTh) + '</small></div><div class="bd"><ul>' + m.data.items.map(function (it) { return "<li><span>" + esc(it.name) + "</span><b>" + it.price + " ฿</b></li>"; }).join("") + '</ul><div class="cnt" data-poll>โหวตแล้ว … คน</div></div><button class="go" data-act="vote">โหวตเลย</button></div>';
+    else body = '<div class="bub">' + esc(m.text) + "</div>";
+    return '<div class="m ' + (mine ? "me" : "") + '">' + (mine ? "" : '<div class="av">' + (m.from === "bot" ? "🍜" : "🙂") + "</div>") + "<div>" + who + body + '</div><span class="time">' + (m.t || "") + "</span></div>";
+  }
+  var A = new Phone($("#phA"), "admin"), M = new Phone($("#phM"), "member"), phones = [A, M];
+  if (!S.polled) { A.ta.value = MENU_SAMPLE; setTimeout(function () { fit(A.ta); }, 50); }   // the menu is already typed: the admin only presses send
+  function preview(m) { return m.kind === "poll" ? "🍽️ โหวตเมนูอาหารวันนี้ — กดเพื่อโหวต" : (m.text || "").split("\n")[0]; }
+  function deliver(tabKey, m, to) {
+    m.t = hhmm();
+    if (to && m.from !== to.role && to.role === "member") { if (to.tab !== tabKey) to.unread[tabKey]++; to.banner(tabKey === "group" ? "ทีมกินข้าว · Logicton" : "อิ่มท้อง", preview(m), tabKey); }
+    save(); phones.forEach(function (p) { p.render(); });
+  }
+  function pushGroup(m) { S.group.push(m); deliver("group", m, M); }
+  function pushDM(role, m) { S.dm[role].push(m); deliver("dm", m, role === "admin" ? A : M); }
+  async function updateCounts() { D.reload(); var s = await db.ref("/votes/" + today).once("value"), n = s.val() ? Object.keys(s.val()).length : 0; $$("[data-poll]").forEach(function (e) { e.textContent = "โหวตแล้ว " + n + " คน"; }); if (cur === 3) paintSummary(); }
+  setInterval(updateCounts, 2500);
+  async function typingIn(p, ms) { var t = document.createElement("div"); t.className = "typing"; t.textContent = "• • •"; p.chat.appendChild(t); p.chat.scrollTop = 1e9; await sleep(ms); t.remove(); }
+
+  // ---------------------------------------------------------------- the AI (simulated: same rules the real n8n flow follows)
+  function parseMenu(text) {
+    var lines = text.replace(/^\s*รายการอาหาร[:\s]*/, "").split(/\n|,/).map(function (s) { return s.trim(); }).filter(Boolean), items = [];
+    lines.forEach(function (l) { l = l.replace(/^\d+[\.\)]\s*/, ""); var m = /(\d{2,3})\s*(บาท|฿|\.-|-)?\s*$/.exec(l), price = m ? +m[1] : DEFAULT_PRICE, name = (m ? l.slice(0, m.index) : l).replace(/[-–:]\s*$/, "").trim(); if (name) items.push({ id: String(items.length + 1), name: name, price: price }); });
+    return items;
+  }
+  var ai = $("#ai");
+  function aiState(st, text) { ai.classList.remove("working", "done"); if (st) { void ai.offsetWidth; ai.classList.add(st); } $("#aiSt").textContent = text; }
+  function showOut(items) {
+    var u = $("#outList"); u.innerHTML = "";
+    (items || []).forEach(function (it, k) { var li = document.createElement("li"); li.style.setProperty("--k", k); li.appendChild(pic(it.name)); li.insertAdjacentHTML("beforeend", "<span>" + esc(it.name) + "</span><b>" + it.price + " ฿</b>"); u.appendChild(li); });
+  }
+  var voterTimers = [];
+  function simVoters() {
+    voterTimers.forEach(clearTimeout); voterTimers = [];
+    D.PEOPLE.filter(function (n) { return n !== "พี่เอก"; }).slice(0, 6).forEach(function (name, i) {
+      voterTimers.push(setTimeout(async function () {
+        var menu = (await db.ref("/menus/" + today).once("value")).val(); if (!menu || !menu.items) return;
+        var arr = Object.keys(menu.items).map(function (k) { return menu.items[k]; }).filter(Boolean), it = arr[[0, 0, 2, 1, 0, 3][i] % arr.length], uid = "Udemo" + ("00000000000000000000000000" + (i + 2)).slice(-27);
+        await db.ref("/votes/" + today + "/" + uid).set({ menuId: it.id, quantity: 1, cost: it.price, userName: name, userPictureUrl: D.avatar(name, (i * 47) % 360) }); D.flush(); updateCounts();
+      }, 2500 + i * 1800));
+    });
+  }
+
+  // ---------------------------------------------------------------- the pipeline: each stage slides the next screen in
+  var busy = false;
+  async function handleAdmin(text) {
+    var items = parseMenu(text); if (!items.length) { await sleep(500); return pushDM("admin", { from: "bot", kind: "text", text: "ยังไม่พบรายการอาหาร ลองพิมพ์ชื่อเมนูเป็นบรรทัดๆ นะ" }); }
+    busy = true; A.sendBtn.disabled = true;
+    await typingIn(A, 700); pushDM("admin", { from: "bot", kind: "text", text: "ได้รับรายการแล้ว ส่งให้ AI แยกเมนูนะ 🤖" });
+    await sleep(700); showOut(null); go(1);                                                          // 2) AI
+    await sleep(500); aiState("working", "AI กำลังอ่านและแยกรายการอาหาร…"); await sleep(2700);
+    var obj = {}; items.forEach(function (it) { obj[it.id] = it; });
+    await db.ref("/menus/" + today).set({ date: today, status: "active", timestamp: Date.now(), items: obj }); await db.ref("/votes/" + today).remove(); await db.ref("/additional_votes/" + today).remove(); D.flush();
+    await db.ref("/groups/" + GROUP).set({ groupId: GROUP, status: "active", timestamp: new Date().toISOString(), userId: U.admin.userId });
+    aiState("done", "แยกได้ " + items.length + " เมนู ราคาเริ่มต้น " + DEFAULT_PRICE + " บาท"); showOut(items);
+    pushDM("admin", { from: "bot", kind: "text", text: "AI แยกได้ " + items.length + " เมนู ✅ ส่งโพลเข้ากลุ่มแล้ว" });
+    await sleep(2600); M.setTab("group"); go(2);                                                     // 3) member
+    await sleep(900); await typingIn(M, 800);
+    S.polled = true; pushGroup({ from: "bot", kind: "poll", data: { items: items, dateTh: dateTh() } });
+    simVoters(); busy = false;
+  }
+
+  // ---------------------------------------------------------------- summary
+  async function paintSummary() {
+    var menu = (await db.ref("/menus/" + today).once("value")).val(); if (!menu || !menu.items || !S.polled) { $("#sumWin").textContent = "ยังไม่มีโพลวันนี้"; $("#sumRows").innerHTML = ""; $("#sumBig").innerHTML = ""; $("#sumTot").textContent = ""; return; }
+    var votes = (await db.ref("/votes/" + today).once("value")).val() || {}, extra = (await db.ref("/additional_votes/" + today).once("value")).val() || {}, count = {}, total = 0, baht = 0;
+    Object.keys(votes).forEach(function (u) { var v = votes[u]; count[v.menuId] = (count[v.menuId] || 0) + (v.quantity || 1); total += v.quantity || 1; });
+    Object.keys(extra).forEach(function (u) { Object.keys(extra[u]).forEach(function (id) { var q = extra[u][id].quantity || 1; count[id] = (count[id] || 0) + q; total += q; baht += (extra[u][id].cost || 0) * q; }); });
+    var rows = Object.keys(menu.items).map(function (id) { return { name: menu.items[id].name, n: count[id] || 0 }; }).sort(function (a, b) { return b.n - a.n; }), max = Math.max(1, rows[0] ? rows[0].n : 1);
+    var top = rows[0], big = $("#sumBig");
+    if (top && top.n) { if (big.dataset.n !== top.name) { big.innerHTML = ""; big.appendChild(pic(top.name)); big.dataset.n = top.name; } $("#sumWin").textContent = "ทีมเลือก “" + top.name + "” มากที่สุด"; }
+    else { big.innerHTML = ""; big.dataset.n = ""; $("#sumWin").textContent = "รอเพื่อนๆ โหวต…"; }
+    $("#sumRows").innerHTML = rows.map(function (r) { return "<div><span>" + esc(r.name) + '</span><span class="bar2"><i style="width:' + Math.round(r.n / max * 100) + '%"></i></span><b>' + r.n + "</b></div>"; }).join("");
+    $("#sumTot").textContent = "โหวตแล้ว " + Object.keys(votes).length + " คน · ทั้งหมด " + total + " จาน" + (baht ? " · เพิ่มเงิน " + baht + " บาท" : "");
+  }
+
+  // ---------------------------------------------------------------- guide ring (only inside the screen in front)
+  var gring = $("#gring"), glabel = $("#glabel");
+  function nextTarget() {
+    if (busy) return null;
+    if (cur === 0 && !S.polled) return { el: A.sendBtn, text: "กดส่งให้บอท" };
+    if (cur === 0 && S.polled) return { el: $("#next"), text: "ดูขั้นต่อไป" };
+    if (cur === 1 && S.polled) return { el: $("#next"), text: "ดูขั้นต่อไป" };
+    if (cur === 2 && S.polled) {
+      if ($(".sheetx.on", M.el)) {
+        var fr = $("iframe", M.el), d; try { d = fr.contentDocument; } catch (e) { d = null; } if (!d) return null;
+        var av = d.querySelector("#already-voted"), picked = av && av.style.display !== "none" && /เลือก\s*[1-9]/.test(av.textContent);
+        if (picked) return { el: $(".x", M.el), text: "กดปิด เพื่อบันทึกโหวต" };
+        var plus = $$("button", d).filter(function (b) { return b.textContent.trim() === "+"; })[0];
+        return plus ? { el: plus, frame: fr, text: "กด + เลือกอาหาร" } : null;
+      }
+      if (!S.voted) { if (M.tab !== "group") return { el: $('.tabs [data-tab="group"]', M.el), text: "เปิดแชทกลุ่ม" }; var g = $$(".card .go[data-act=vote]", M.el); return g.length ? { el: g[g.length - 1], text: "กด โหวตเลย" } : null; }
+      return { el: $("#next"), text: "ดูสรุปผล" };
+    }
+    return null;
+  }
+  function showGuide() {
+    var t = nextTarget();
+    if (!t || !t.el) { gring.hidden = glabel.hidden = true; return; }
+    var r0 = t.el.getBoundingClientRect(), fo = t.frame ? t.frame.getBoundingClientRect() : { left: 0, top: 0 };
+    var k = t.frame ? fo.width / t.frame.offsetWidth : 1, r = { width: r0.width * k, height: r0.height * k }, L = fo.left + r0.left * k, T = fo.top + r0.top * k;   // the vote page is scaled down
+    var box = t.el.closest(".chat"), cr = box ? box.getBoundingClientRect() : null, vb = t.frame ? t.frame.parentNode.getBoundingClientRect() : null;
+    if (!r.width || (cr && (T + r.height < cr.top || T > cr.bottom)) || (vb && (T > vb.bottom || T + r.height < vb.top))) { gring.hidden = glabel.hidden = true; return; }
+    gring.hidden = glabel.hidden = false;
+    gring.style.left = (L - 6) + "px"; gring.style.top = (T - 6) + "px"; gring.style.width = (r.width + 12) + "px"; gring.style.height = (r.height + 12) + "px"; gring.style.borderRadius = r.height < 56 ? "999px" : "16px";
+    var up = T > 70; glabel.textContent = (up ? "👇 " : "👆 ") + t.text; glabel.className = "glabel " + (up ? "up" : "down");
+    glabel.style.left = Math.max(90, Math.min(innerWidth - 90, L + r.width / 2)) + "px"; glabel.style.top = (up ? T - 46 : T + r.height + 14) + "px";
+  }
+  setInterval(showGuide, 160);
+
+  // ---------------------------------------------------------------- reset
+  function reset() { try { Object.keys(localStorage).filter(function (k) { return k.indexOf("fv_") === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { } location.reload(); }
+  $("#reset").onclick = reset; $("#again").onclick = reset;
+
+  // start where the visitor left off (after a refresh), otherwise at the admin phone
+  go(S.polled ? Math.min(S.reached || 0, 3) : 0);
+  if (S.polled) { aiState("done", "แยกได้ " + (S.group.filter(function (m) { return m.kind === "poll"; }).pop() || { data: { items: [] } }).data.items.length + " เมนู ราคาเริ่มต้น " + DEFAULT_PRICE + " บาท"); var lp = S.group.filter(function (m) { return m.kind === "poll"; }).pop(); if (lp) showOut(lp.data.items); A.sendBtn.disabled = true; }
+  requestAnimationFrame(function () { go(cur); }); addEventListener("load", function () { go(cur); });
+  if (document.fonts) document.fonts.ready.then(function () { go(cur); });
+})();
+</script>
+</body>
+</html>

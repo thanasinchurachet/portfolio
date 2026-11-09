@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ของฉัน - BinBuddy</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="demo.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #218860 0%, #1a6d4c 100%);
+            padding: 2.5rem 2rem;
+            color: white;
+            border-radius: 1rem;
+        }
+        .profile-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255,255,255,0.4);
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar bg-green-500 shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container-fluid px-4">
+            <div class="w-full flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="home.html" class="flex items-center py-4 px-3 text-white hover:bg-green-600 rounded-lg transition-all duration-300">
+                        <i class="fas fa-recycle mr-2 text-xl"></i>
+                        <span class="font-bold text-xl">Bin Buddy</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:flex items-center space-x-1 bg-green-600 bg-opacity-30 rounded-lg px-2">
+                        <a href="home.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-home mr-2"></i><span class="hidden sm:inline">หน้าหลัก</span></a>
+                        <a href="share.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-share-alt mr-2"></i><span class="hidden sm:inline">แบ่งปัน</span></a>
+                        <a href="waste.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-trash mr-2"></i><span class="hidden sm:inline">ข้อมูลขยะ</span></a>
+                        <a href="waste-classification.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-camera mr-2"></i><span class="hidden sm:inline">สแกน</span></a>
+                        <a href="locations.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-map-marker-alt mr-2"></i><span class="hidden sm:inline">ศูนย์จัดการ</span></a>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-green-600 bg-opacity-30 rounded-lg px-2 py-1">
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="p-2 text-white hover:bg-green-600 transition-all duration-300" aria-label="Notifications" style="border-radius: 0.25rem;">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                            </button>
+                            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto border-none">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">การแจ้งเตือน</h3>
+                                    <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium" data-demo="อ่านการแจ้งเตือนทั้งหมด (เดโม)">อ่านทั้งหมด</button>
+                                </div>
+                                <div class="p-4 text-center text-gray-500">ไม่มีการแจ้งเตือนใหม่</div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleProfile()" class="p-2 text-white hover:bg-green-600 rounded-lg transition-all duration-300 flex items-center space-x-1">
+                                <img src="img/profile/6876674e421ad.svg" alt="Profile" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white" style="object-fit: cover;">
+                                <span class="hidden md:inline text-sm">ผู้เยี่ยมชม</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                                <a href="profile.html" class="flex items-center p-3 text-gray-700 bg-gray-100 font-semibold border-b border-gray-100"><i class="fas fa-user-circle mr-3 text-green-600 w-5 text-center"></i><span>โปรไฟล์</span></a>
+                                <a href="liked.html" class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-heart mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>โพสต์ที่ถูกใจ</span></a>
+                                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><span class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-plus mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>เพิ่มโพสต์</span></span></a>
+                                <a href="login.html" class="flex items-center p-3 text-red-600 hover:bg-gray-50 transition-all duration-300"><i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i><span>ออกจากระบบ</span></a>
+                            </div>
+                        </div>
+                        <button class="navbar-toggler text-white hover:bg-green-600 p-2 rounded-lg transition-all duration-300 lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header border-b">
+            <h5 class="offcanvas-title font-semibold" id="offcanvasMenuLabel">เมนู</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="space-y-1">
+                <a href="profile.html" class="flex items-center p-3 rounded-lg transition-all duration-200 bg-green-400 text-green-900 font-semibold"><i class="fas fa-user-circle w-8 text-center text-lg"></i><span>โปรไฟล์ของฉัน</span></a>
+                <a href="liked.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-heart w-8 text-center text-lg"></i><span>โพสต์ที่ถูกใจ</span></a>
+                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-plus w-8 text-center text-lg"></i><span>เพิ่มโพสต์</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="home.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-home w-8 text-center text-lg"></i><span>หน้าหลัก</span></a>
+                <a href="share.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-share-alt w-8 text-center text-lg"></i><span>แบ่งปัน</span></a>
+                <a href="waste.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-trash-alt w-8 text-center text-lg"></i><span>ข้อมูลขยะ</span></a>
+                <a href="waste-classification.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-camera w-8 text-center text-lg"></i><span>สแกน</span></a>
+                <a href="locations.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-map-marker-alt w-8 text-center text-lg"></i><span>ศูนย์จัดการ</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="login.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-red-300 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-sign-out-alt w-8 text-center text-lg"></i><span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding-top: 90px;" class="container mx-auto px-4 pb-10 max-w-5xl">
+        <!-- Profile Header -->
+        <div class="profile-header mb-6">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                <img src="img/profile/6876674e421ad.svg" alt="avatar" class="profile-avatar">
+                <div class="text-center sm:text-left flex-1">
+                    <h1 class="text-2xl font-bold mb-1">ผู้เยี่ยมชม (Guest)</h1>
+                    <p class="opacity-90 mb-1"><i class="fas fa-envelope mr-2"></i>guest@binbuddy.demo</p>
+                    <p class="opacity-75 text-sm">สมาชิกตั้งแต่ 1 พฤศจิกายน 2569</p>
+                    <div class="mt-3 inline-flex gap-3 text-sm">
+                        <span class="bg-white bg-opacity-20 rounded-full px-4 py-1"><b>3</b> โพสต์</span>
+                        <span class="bg-white bg-opacity-20 rounded-full px-4 py-1"><b>12</b> ถูกใจ</span>
+                    </div>
+                </div>
+                <button class="bg-white text-green-700 font-semibold px-5 py-2 rounded-lg hover:bg-green-50" data-demo="ระบบแก้ไขโปรไฟล์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม">
+                    <i class="fas fa-edit mr-2"></i>แก้ไขโปรไฟล์
+                </button>
+            </div>
+        </div>
+
+        <!-- My Posts -->
+        <h2 class="text-xl font-bold text-gray-800 mb-3"><i class="fas fa-newspaper mr-2 text-green-600"></i>โพสต์ของฉัน</h2>
+        <div class="share-grid">
+            <div class="share-card">
+                <div class="share-card-content">
+                    <div class="post-header"><div class="flex items-center mb-3">
+                        <img src="img/profile/6876674e421ad.svg" class="w-10 h-10 rounded-full" style="object-fit:cover">
+                        <div class="ml-3"><div class="font-bold text-sm">ผู้เยี่ยมชม</div><div class="text-gray-500 text-xs">2 พฤศจิกายน 2569 10:00 น.</div></div>
+                    </div></div>
+                    <div class="post-body">
+                        <h3 class="text-lg font-semibold mb-2">ลองใช้ AI จำแนกขยะแล้ว แม่นยำกว่าที่คิด!</h3>
+                        <div class="waste-info mb-3"><p class="font-bold text-sm mb-1"><span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะรีไซเคิล</span><span class="mx-4 text-gray-400">|</span><span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">รีไซเคิล</span></p></div>
+                    </div>
+                    <div class="img-container"><img src="img/waste/plastic.jpg" alt="ขวดพลาสติก"></div>
+                    <div class="post-footer"><div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">45</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">6 คอมเมนต์</span></button>
+                    </div></div>
+                </div>
+            </div>
+            <div class="share-card">
+                <div class="share-card-content">
+                    <div class="post-header"><div class="flex items-center mb-3">
+                        <img src="img/profile/6876674e421ad.svg" class="w-10 h-10 rounded-full" style="object-fit:cover">
+                        <div class="ml-3"><div class="font-bold text-sm">ผู้เยี่ยมชม</div><div class="text-gray-500 text-xs">30 ตุลาคม 2569 19:30 น.</div></div>
+                    </div></div>
+                    <div class="post-body">
+                        <h3 class="text-lg font-semibold mb-2">เริ่มทำปุ๋ยหมักจากเศษอาหารในบ้าน</h3>
+                        <div class="waste-info mb-3"><p class="font-bold text-sm mb-1"><span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะอินทรีย์</span><span class="mx-4 text-gray-400">|</span><span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">นำกลับมาใช้ใหม่</span></p></div>
+                    </div>
+                    <div class="img-container"><img src="img/waste/banana.jpeg" alt="เปลือกกล้วย"></div>
+                    <div class="post-footer"><div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">28</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">4 คอมเมนต์</span></button>
+                    </div></div>
+                </div>
+            </div>
+            <div class="share-card">
+                <div class="share-card-content">
+                    <div class="post-header"><div class="flex items-center mb-3">
+                        <img src="img/profile/6876674e421ad.svg" class="w-10 h-10 rounded-full" style="object-fit:cover">
+                        <div class="ml-3"><div class="font-bold text-sm">ผู้เยี่ยมชม</div><div class="text-gray-500 text-xs">25 ตุลาคม 2569 08:15 น.</div></div>
+                    </div></div>
+                    <div class="post-body">
+                        <h3 class="text-lg font-semibold mb-2">เก็บแบตเตอรี่เสียไว้ที่เดียว เดี๋ยวก็ไปทิ้งที่จุดรับถูกวิธี</h3>
+                        <div class="waste-info mb-3"><p class="font-bold text-sm mb-1"><span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะอันตราย</span><span class="mx-4 text-gray-400">|</span><span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">กำจัด</span></p></div>
+                    </div>
+                    <div class="img-container"><img src="img/waste/battery.jpeg" alt="แบตเตอรี่"></div>
+                    <div class="post-footer"><div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">17</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">2 คอมเมนต์</span></button>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="demo.js"></script>
+</body>
+</html>

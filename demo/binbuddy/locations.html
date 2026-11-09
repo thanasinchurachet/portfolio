@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ค้นหาศูนย์จัดการขยะ - BinBuddy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="demo.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f8f9fa; }
+        .card { border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s ease-in-out; }
+        .card:hover { transform: translateY(-5px); }
+        .loc-chip { padding: 0.5rem 1rem; border-radius: 9999px; background-color: #ffffff; color: #374151; transition: all 0.3s; cursor: pointer; border: 1px solid #e5e7eb; font-weight: 500; }
+        .loc-chip:hover, .loc-chip.active { background-color: #10b981; color: white; border-color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar bg-green-500 shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container-fluid px-4">
+            <div class="w-full flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="home.html" class="flex items-center py-4 px-3 text-white hover:bg-green-600 rounded-lg transition-all duration-300">
+                        <i class="fas fa-recycle mr-2 text-xl"></i>
+                        <span class="font-bold text-xl">Bin Buddy</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:flex items-center space-x-1 bg-green-600 bg-opacity-30 rounded-lg px-2">
+                        <a href="home.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-home mr-2"></i><span class="hidden sm:inline">หน้าหลัก</span></a>
+                        <a href="share.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-share-alt mr-2"></i><span class="hidden sm:inline">แบ่งปัน</span></a>
+                        <a href="waste.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-trash mr-2"></i><span class="hidden sm:inline">ข้อมูลขยะ</span></a>
+                        <a href="waste-classification.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-camera mr-2"></i><span class="hidden sm:inline">สแกน</span></a>
+                        <a href="locations.html" class="py-3 px-3 text-white bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-map-marker-alt mr-2"></i><span class="hidden sm:inline">ศูนย์จัดการ</span></a>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-green-600 bg-opacity-30 rounded-lg px-2 py-1">
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="p-2 text-white hover:bg-green-600 transition-all duration-300" aria-label="Notifications" style="border-radius: 0.25rem;">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                            </button>
+                            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto border-none">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">การแจ้งเตือน</h3>
+                                    <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium" data-demo="อ่านการแจ้งเตือนทั้งหมด (เดโม)">อ่านทั้งหมด</button>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-white border-l-4 border-gray-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-bell text-gray-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-gray-800">ระบบจะเริ่มค้นหาจุดรับซื้อขยะใกล้คุณอัตโนมัติ</p>
+                                            <p class="text-xs text-gray-500">เมื่อกี้ (เดโม)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleProfile()" class="p-2 text-white hover:bg-green-600 rounded-lg transition-all duration-300 flex items-center space-x-1">
+                                <img src="img/profile/6876674e421ad.svg" alt="Profile" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white" style="object-fit: cover;">
+                                <span class="hidden md:inline text-sm">ผู้เยี่ยมชม</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                                <a href="profile.html" class="flex items-center p-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100"><i class="fas fa-user-circle mr-3 text-green-600 w-5 text-center"></i><span>โปรไฟล์</span></a>
+                                <a href="liked.html" class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-heart mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>โพสต์ที่ถูกใจ</span></a>
+                                <a href="login.html" class="flex items-center p-3 text-red-600 hover:bg-gray-50 transition-all duration-300"><i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i><span>ออกจากระบบ</span></a>
+                            </div>
+                        </div>
+                        <button class="navbar-toggler text-white hover:bg-green-600 p-2 rounded-lg transition-all duration-300 lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header border-b">
+            <h5 class="offcanvas-title font-semibold" id="offcanvasMenuLabel">เมนู</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="space-y-1">
+                <a href="profile.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-user-circle w-8 text-center text-lg"></i><span>โปรไฟล์ของฉัน</span></a>
+                <a href="liked.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-heart w-8 text-center text-lg"></i><span>โพสต์ที่ถูกใจ</span></a>
+                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-plus w-8 text-center text-lg"></i><span>เพิ่มโพสต์</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="home.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-home w-8 text-center text-lg"></i><span>หน้าหลัก</span></a>
+                <a href="share.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-share-alt w-8 text-center text-lg"></i><span>แบ่งปัน</span></a>
+                <a href="waste.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-trash-alt w-8 text-center text-lg"></i><span>ข้อมูลขยะ</span></a>
+                <a href="waste-classification.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-camera w-8 text-center text-lg"></i><span>สแกน</span></a>
+                <a href="locations.html" class="flex items-center p-3 rounded-lg transition-all duration-200 bg-green-400 text-green-900 font-semibold"><i class="fas fa-map-marker-alt w-8 text-center text-lg"></i><span>ศูนย์จัดการ</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="login.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-red-300 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-sign-out-alt w-8 text-center text-lg"></i><span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="padding-top: 90px; padding-bottom: 60px;">
+        <h1 class="mb-1"><i class="fas fa-map-marker-alt text-success me-2"></i>ค้นหาศูนย์จัดการขยะ</h1>
+        <p class="text-muted mb-4">ค้นหาจุดรับซื้อและศูนย์รีไซเคิลใกล้คุณ (ข้อมูลตัวอย่าง)</p>
+
+        <div class="card p-3 p-md-4 mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-lg-7">
+                    <label class="form-label fw-semibold">ประเภทขยะ:</label>
+                    <div id="filter-container" class="d-flex flex-wrap gap-2">
+                        <button class="loc-chip active" data-keyword="all">ทั้งหมด</button>
+                        <button class="loc-chip" data-keyword="รีไซเคิล">รีไซเคิล</button>
+                        <button class="loc-chip" data-keyword="อันตราย">อันตราย</button>
+                        <button class="loc-chip" data-keyword="ทั่วไป">ทั่วไป</button>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <label for="radiusInput" class="form-label fw-semibold">ค้นหาในรัศมี (กม.):</label>
+                    <div class="input-group">
+                        <input type="number" id="radiusInput" class="form-control" value="30" min="1" max="120">
+                        <button id="searchBtn" class="btn btn-success"><i class="fas fa-search me-1"></i> ค้นหา</button>
+                    </div>
+                    <div class="form-text"><i class="fas fa-info-circle"></i> รัศมีการค้นหาสูงสุดคือ 120 กิโลเมตร</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" class="row g-4">
+            <!-- การ์ดตัวอย่าง 9 จุด -->
+            <div class="col-md-6 col-lg-4 d-flex" data-type="รีไซเคิล">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดรีไซเคิล สวนลุมพินี</h5>
+                    <p class="text-muted small mb-2">ถนนวิทยุ แขวงลุมพินี เขตปทุมวัน กรุงเทพฯ 10330</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">1.2 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=สวนลุมพินี" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="รีไซเคิล">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดรีไซเคิล ตลาดน้อย</h5>
+                    <p class="text-muted small mb-2">ถนนเจริญนคร แขวงตลาดน้อย เขตสัมพันธวงศ์ กรุงเทพฯ 10100</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">3.8 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=ตลาดน้อย+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="ทั่วไป">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดทิ้งขยะ สะพานสูง</h5>
+                    <p class="text-muted small mb-2">ถนนสะพานสูง แขวงสะพานสูง เขตสะพานสูง กรุงเทพฯ 10250</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">5.1 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=สะพานสูง+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="รีไซเคิล">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดรีไซเคิล ห้าแยกลาดพร้าว</h5>
+                    <p class="text-muted small mb-2">ถนนพหลโยธิน แขวงจอมพล เขตจตุจักร กรุงเทพฯ 10900</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">7.4 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=ห้าแยกลาดพร้าว" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="ทั่วไป">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดทิ้งขยะ บางนา</h5>
+                    <p class="text-muted small mb-2">ถนนบางนา-ตราด แขวงบางนาเหนือ เขตบางนา กรุงเทพฯ 10260</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">9.6 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=บางนา+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="รีไซเคิล">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดรีไซเคิล รัชดาภิเษก</h5>
+                    <p class="text-muted small mb-2">ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">4.3 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=รัชดาภิเษก+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="ทั่วไป">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดทิ้งขยะ มีนบุรี</h5>
+                    <p class="text-muted small mb-2">ถนนมิตรภาพ แขวงมีนบุรี เขตมีนบุรี กรุงเทพฯ 10510</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">11.8 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=มีนบุรี+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="รีไซเคิล">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดรีไซเคิล อ่อนนุช</h5>
+                    <p class="text-muted small mb-2">ถนนอ่อนนุช แขวงประเวศ เขตประเวศ กรุงเทพฯ 10250</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">8.2 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=อ่อนนุช+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 d-flex" data-type="ทั่วไป">
+                <div class="card p-3 bg-white w-100">
+                    <h5 class="fw-bold mb-1">จุดทิ้งขยะ รัชโยธิน</h5>
+                    <p class="text-muted small mb-2">ถนนรัชโยธิน แขวงจตุจักร เขตจตุจักร กรุงเทพฯ 10900</p>
+                    <div class="d-flex justify-content-end mb-2"><span class="badge bg-success rounded-pill">6.5 กม.</span></div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=รัชโยธิน+กรุงเทพ" target="_blank" class="btn btn-sm btn-outline-primary mt-auto"><i class="fas fa-map-marker-alt me-1"></i> ดูบนแผนที่</a>
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-muted mt-4" id="noResult" style="display:none;">ไม่พบจุดที่ตรงตามตัวกรอง</p>
+    </div>
+
+    <script src="demo.js"></script>
+    <script>
+        // กรองตามประเภทขยะ (client-side demo)
+        document.querySelectorAll('.loc-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                document.querySelector('.loc-chip.active').classList.remove('active');
+                chip.classList.add('active');
+                var kw = chip.dataset.keyword;
+                var shown = 0;
+                document.querySelectorAll('#result > [data-type]').forEach(function (el) {
+                    var ok = kw === 'all' || el.dataset.type === kw;
+                    el.style.display = ok ? '' : 'none';
+                    if (ok) shown++;
+                });
+                document.getElementById('noResult').style.display = shown ? 'none' : '';
+            });
+        });
+        // ปุ่มค้นหา: ในระบบจริงจะใช้ตำแหน่ง GPS + Overpass API
+        document.getElementById('searchBtn').addEventListener('click', function () {
+            Swal.fire({
+                icon: 'info',
+                title: 'โหมดเดโม',
+                text: 'ระบบจริงจะระบุตำแหน่งของคุณแล้วค้นหาจุดทิ้งขยะในรัศมีที่เลือก (OpenStreetMap/Overpass)',
+                confirmButtonColor: '#10b981'
+            });
+        });
+    </script>
+</body>
+</html>

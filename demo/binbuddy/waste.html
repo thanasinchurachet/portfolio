@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการขยะ - BinBuddy</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="demo.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        .sort-btn.active { background-color: rgba(5, 150, 105, 1); color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar bg-green-500 shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container-fluid px-4">
+            <div class="w-full flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="home.html" class="flex items-center py-4 px-3 text-white hover:bg-green-600 rounded-lg transition-all duration-300">
+                        <i class="fas fa-recycle mr-2 text-xl"></i>
+                        <span class="font-bold text-xl">Bin Buddy</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:flex items-center space-x-1 bg-green-600 bg-opacity-30 rounded-lg px-2">
+                        <a href="home.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-home mr-2"></i><span class="hidden sm:inline">หน้าหลัก</span></a>
+                        <a href="share.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-share-alt mr-2"></i><span class="hidden sm:inline">แบ่งปัน</span></a>
+                        <a href="waste.html" class="py-3 px-3 text-white bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-trash mr-2"></i><span class="hidden sm:inline">ข้อมูลขยะ</span></a>
+                        <a href="waste-classification.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-camera mr-2"></i><span class="hidden sm:inline">สแกน</span></a>
+                        <a href="locations.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-map-marker-alt mr-2"></i><span class="hidden sm:inline">ศูนย์จัดการ</span></a>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-green-600 bg-opacity-30 rounded-lg px-2 py-1">
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="p-2 text-white hover:bg-green-600 transition-all duration-300" aria-label="Notifications" style="border-radius: 0.25rem;">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                            </button>
+                            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto border-none">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">การแจ้งเตือน</h3>
+                                    <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium" data-demo="อ่านการแจ้งเตือนทั้งหมด (เดโม)">อ่านทั้งหมด</button>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-green-50 border-l-4 border-green-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-check-circle text-green-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-green-800">โพสต์ของคุณได้รับการอนุมัติแล้ว</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 14:20 (2 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-white border-l-4 border-gray-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-bell text-gray-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-gray-800">มีความคิดเห็นใหม่ในโพสต์ของคุณ</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 09:05 (7 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                        <div class="flex-shrink-0 ml-2"><span class="w-2 h-2 bg-blue-500 rounded-full block"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleProfile()" class="p-2 text-white hover:bg-green-600 rounded-lg transition-all duration-300 flex items-center space-x-1">
+                                <img src="img/profile/6876674e421ad.svg" alt="Profile" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white" style="object-fit: cover;">
+                                <span class="hidden md:inline text-sm">ผู้เยี่ยมชม</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                                <a href="profile.html" class="flex items-center p-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100"><i class="fas fa-user-circle mr-3 text-green-600 w-5 text-center"></i><span>โปรไฟล์</span></a>
+                                <a href="liked.html" class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-heart mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>โพสต์ที่ถูกใจ</span></a>
+                                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><span class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-plus mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>เพิ่มโพสต์</span></span></a>
+                                <a href="login.html" class="flex items-center p-3 text-red-600 hover:bg-gray-50 transition-all duration-300"><i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i><span>ออกจากระบบ</span></a>
+                            </div>
+                        </div>
+                        <button class="navbar-toggler text-white hover:bg-green-600 p-2 rounded-lg transition-all duration-300 lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header border-b">
+            <h5 class="offcanvas-title font-semibold" id="offcanvasMenuLabel">เมนู</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="space-y-1">
+                <a href="profile.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-user-circle w-8 text-center text-lg"></i><span>โปรไฟล์ของฉัน</span></a>
+                <a href="liked.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-heart w-8 text-center text-lg"></i><span>โพสต์ที่ถูกใจ</span></a>
+                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-plus w-8 text-center text-lg"></i><span>เพิ่มโพสต์</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="home.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-home w-8 text-center text-lg"></i><span>หน้าหลัก</span></a>
+                <a href="share.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-share-alt w-8 text-center text-lg"></i><span>แบ่งปัน</span></a>
+                <a href="waste.html" class="flex items-center p-3 rounded-lg transition-all duration-200 bg-green-400 text-green-900 font-semibold"><i class="fas fa-trash-alt w-8 text-center text-lg"></i><span>ข้อมูลขยะ</span></a>
+                <a href="waste-classification.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-camera w-8 text-center text-lg"></i><span>สแกน</span></a>
+                <a href="locations.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-map-marker-alt w-8 text-center text-lg"></i><span>ศูนย์จัดการ</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="login.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-red-300 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-sign-out-alt w-8 text-center text-lg"></i><span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding-top: 90px;" class="container mx-auto px-4 pb-10">
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">รายการขยะ</h1>
+        <p class="text-gray-500 mb-4">เรียนรู้วิธีจัดการขยะแต่ละประเภทอย่างถูกวิธี (ข้อมูลตัวอย่าง)</p>
+
+        <!-- ฟิลเตอร์และช่องค้นหา -->
+        <div class="p-4 rounded-lg bg-white shadow-sm mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">ค้นหาขยะ</label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อขยะ..."
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                <div>
+                    <label for="wasteTypeFilter" class="block text-sm font-medium text-gray-700 mb-1">กรองตามประเภท</label>
+                    <select id="wasteTypeFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="ขยะรีไซเคิล">ขยะรีไซเคิล</option>
+                        <option value="ขยะอันตราย">ขยะอันตราย</option>
+                        <option value="ขยะทั่วไป">ขยะทั่วไป</option>
+                        <option value="ขยะอินทรีย์">ขยะอินทรีย์</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เรียงลำดับ</label>
+                    <div class="flex space-x-2">
+                        <button id="sortAZ" class="sort-btn px-3 py-2 bg-gray-200 rounded-lg text-sm active">ก-ฮ</button>
+                        <button id="sortZA" class="sort-btn px-3 py-2 bg-gray-200 rounded-lg text-sm">ฮ-ก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="wasteGrid">
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะรีไซเคิล" data-name="ขวดพลาสติก">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">ขวดพลาสติก</h2>
+                <img src="img/waste/plastic.jpg" alt="ขวดพลาสติก" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 border-green-300 rounded-full text-xs border">ขยะรีไซเคิล</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="1" aria-pressed="true">รีไซเคิล</button>
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300" data-content-id="2" aria-pressed="false">นำกลับมาใช้ใหม่</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=1" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะรีไซเคิล" data-name="กระดาษ">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">กระดาษ</h2>
+                <img src="img/waste/paper.jpeg" alt="กระดาษ" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 border-green-300 rounded-full text-xs border">ขยะรีไซเคิล</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="3" aria-pressed="true">รีไซเคิล</button>
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300" data-content-id="4" aria-pressed="false">นำกลับมาใช้ใหม่</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=3" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะรีไซเคิล" data-name="แก้วนม/กล่องนม">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">แก้วนม/กล่องนม</h2>
+                <img src="img/waste/milk.jpeg" alt="แก้วนม" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 border-green-300 rounded-full text-xs border">ขยะรีไซเคิล</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="5" aria-pressed="true">รีไซเคิล</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=5" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะรีไซเคิล" data-name="กระป๋องโค้ก">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">กระป๋องโค้ก</h2>
+                <img src="img/waste/coke.jpg" alt="กระป๋อง" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 border-green-300 rounded-full text-xs border">ขยะรีไซเคิล</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="6" aria-pressed="true">รีไซเคิล</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=6" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะอินทรีย์" data-name="เปลือกผลไม้/เศษอาหาร">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">เปลือกผลไม้/เศษอาหาร</h2>
+                <img src="img/waste/banana.jpeg" alt="เปลือกกล้วย" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 border-yellow-300 rounded-full text-xs border">ขยะอินทรีย์</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="7" aria-pressed="true">นำกลับมาใช้ใหม่</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=7" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะอันตราย" data-name="แบตเตอรี่">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">แบตเตอรี่</h2>
+                <img src="img/waste/battery.jpeg" alt="แบตเตอรี่" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 border-red-300 rounded-full text-xs border">ขยะอันตราย</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="8" aria-pressed="true">กำจัด</button>
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300" data-content-id="9" aria-pressed="false">รีไซเคิล</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=8" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะอันตราย" data-name="ขยะอิเล็กทรอนิกส์">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">ขยะอิเล็กทรอนิกส์</h2>
+                <img src="img/waste/el-trash.jpg" alt="ขยะอิเล็กทรอนิกส์" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 border-red-300 rounded-full text-xs border">ขยะอันตราย</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="10" aria-pressed="true">รีไซเคิล</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=10" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะอันตราย" data-name="ของมีพิษ/สารเคมี">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">ของมีพิษ/สารเคมี</h2>
+                <img src="img/waste/hazardous.png" alt="ของมีพิษ" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 border-red-300 rounded-full text-xs border">ขยะอันตราย</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="11" aria-pressed="true">กำจัด</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=11" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะทั่วไป" data-name="ถังขยะ/ขยะรวม">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">ถังขยะ/ขยะรวม</h2>
+                <img src="img/waste/recycle-bin.png" alt="ถังขยะ" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 border-blue-300 rounded-full text-xs border">ขยะทั่วไป</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="12" aria-pressed="true">กำจัด</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=12" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+            <div class="waste-card rounded-xl shadow bg-white p-5 flex flex-col" data-type="ขยะอันตราย" data-name="ไมโครเวฟเก่า">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">ไมโครเวฟเก่า</h2>
+                <img src="img/waste/microwave.jpeg" alt="ไมโครเวฟ" class="mb-3 rounded-lg w-full h-48 object-contain bg-white">
+                <div class="flex items-center mb-2">
+                    <span class="text-sm font-medium text-gray-700">ประเภทขยะ:</span>
+                    <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 border-red-300 rounded-full text-xs border">ขยะอันตราย</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-sm font-medium text-gray-700">วิธีการจัดการ:</span>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button type="button" class="method-pill px-3 py-1 rounded-full text-xs border border-gray-300 is-active bg-green-100 border-green-300" data-content-id="13" aria-pressed="true">รีไซเคิล</button>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a class="btn-more block text-center bg-green-600 text-white rounded-lg py-2 hover:bg-green-700" href="waste-info.html?id=13" data-base="waste-info.html?id=">ดูข้อมูลเพิ่มเติม</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="noResults" class="hidden text-center py-8 bg-white rounded-lg shadow mt-6">
+            <i class="fas fa-search fa-3x text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700">ไม่พบขยะที่ค้นหา</h3>
+            <p class="text-gray-500">ลองเปลี่ยนคำค้นหาหรือตัวกรองดูนะ</p>
+        </div>
+    </div>
+
+    <script src="demo.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const wasteTypeFilter = document.getElementById('wasteTypeFilter');
+            const sortAZ = document.getElementById('sortAZ');
+            const sortZA = document.getElementById('sortZA');
+            const wasteGrid = document.getElementById('wasteGrid');
+            const noResults = document.getElementById('noResults');
+            const wasteCards = Array.from(document.querySelectorAll('.waste-card'));
+            let currentSort = 'az';
+
+            function filterCards() {
+                const searchText = searchInput.value.toLowerCase();
+                const selectedType = wasteTypeFilter.value;
+                let visibleCards = 0;
+                wasteCards.forEach(card => {
+                    const name = card.getAttribute('data-name').toLowerCase();
+                    const type = card.getAttribute('data-type');
+                    const matchesSearch = name.includes(searchText);
+                    const matchesType = selectedType === 'all' || type === selectedType;
+                    if (matchesSearch && matchesType) { card.style.display = 'flex'; visibleCards++; }
+                    else { card.style.display = 'none'; }
+                });
+                if (visibleCards === 0) {
+                    noResults.classList.remove('hidden');
+                    wasteGrid.classList.add('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                    wasteGrid.classList.remove('hidden');
+                }
+                sortCards();
+            }
+
+            function sortCards() {
+                const cards = Array.from(wasteGrid.querySelectorAll('.waste-card'));
+                const visibleCards = cards.filter(card => card.style.display !== 'none');
+                visibleCards.sort((a, b) => {
+                    const nameA = a.getAttribute('data-name');
+                    const nameB = b.getAttribute('data-name');
+                    const collator = new Intl.Collator('th');
+                    return currentSort === 'az' ? collator.compare(nameA, nameB) : collator.compare(nameB, nameA);
+                });
+                visibleCards.forEach(card => wasteGrid.appendChild(card));
+            }
+
+            function setSortOrder(order) {
+                currentSort = order;
+                sortAZ.classList.toggle('active', order === 'az');
+                sortZA.classList.toggle('active', order === 'za');
+                sortCards();
+            }
+
+            // method pill active toggle + link update
+            document.addEventListener('click', function (e) {
+                const pill = e.target.closest('.method-pill');
+                if (!pill) return;
+                const card = pill.closest('.waste-card');
+                card.querySelectorAll('.method-pill').forEach(b => {
+                    b.classList.remove('is-active', 'bg-green-100', 'border-green-300');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                pill.classList.add('is-active', 'bg-green-100', 'border-green-300');
+                pill.setAttribute('aria-pressed', 'true');
+                const contentId = pill.getAttribute('data-content-id');
+                const moreBtn = card.querySelector('.btn-more');
+                if (contentId) moreBtn.href = moreBtn.getAttribute('data-base') + encodeURIComponent(contentId);
+            });
+
+            searchInput.addEventListener('input', filterCards);
+            wasteTypeFilter.addEventListener('change', filterCards);
+            sortAZ.addEventListener('click', () => setSortOrder('az'));
+            sortZA.addEventListener('click', () => setSortOrder('za'));
+            filterCards();
+        });
+    </script>
+</body>
+</html>

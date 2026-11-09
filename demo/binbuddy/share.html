@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แชร์วิธีจัดการขยะ - ระบบจัดการขยะอัจฉริยะ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="demo.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        .modal-dialog { padding-top: 100px; }
+        #sortDropdownMenu { display: none; }
+        #sortDropdownMenu.show { display: block; }
+        @media (min-width: 1024px) {
+            .lg\:hidden { display: none !important; }
+        }
+        @media (max-width: 1024px) {
+            #filtersBar .hidden.lg\:flex { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation (โหมดผู้เยี่ยมชม เหมือน nav.php) -->
+    <nav class="navbar bg-green-500 shadow-lg fixed top-0 left-0 w-full z-50">
+        <div class="container-fluid px-4">
+            <div class="w-full flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="home.html" class="flex items-center py-4 px-3 text-white hover:bg-green-600 rounded-lg transition-all duration-300">
+                        <i class="fas fa-recycle mr-2 text-xl"></i>
+                        <span class="font-bold text-xl">Bin Buddy</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden lg:flex items-center space-x-1 bg-green-600 bg-opacity-30 rounded-lg px-2">
+                        <a href="home.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-home mr-2"></i><span class="hidden sm:inline">หน้าหลัก</span></a>
+                        <a href="share.html" class="py-3 px-3 text-white bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-share-alt mr-2"></i><span class="hidden sm:inline">แบ่งปัน</span></a>
+                        <a href="waste.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-trash mr-2"></i><span class="hidden sm:inline">ข้อมูลขยะ</span></a>
+                        <a href="waste-classification.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-camera mr-2"></i><span class="hidden sm:inline">สแกน</span></a>
+                        <a href="locations.html" class="py-3 px-3 text-white hover:bg-green-600 rounded-lg text-sm lg:text-base transition-all duration-300"><i class="fas fa-map-marker-alt mr-2"></i><span class="hidden sm:inline">ศูนย์จัดการ</span></a>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-green-600 bg-opacity-30 rounded-lg px-2 py-1">
+                        <div class="relative">
+                            <button onclick="toggleNotifications()" class="p-2 text-white hover:bg-green-600 transition-all duration-300" aria-label="Notifications" style="border-radius: 0.25rem;">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+                            </button>
+                            <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto border-none">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">การแจ้งเตือน</h3>
+                                    <button type="button" class="text-green-600 hover:text-green-700 text-sm font-medium" data-demo="อ่านการแจ้งเตือนทั้งหมด (เดโม)">อ่านทั้งหมด</button>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-green-50 border-l-4 border-green-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-check-circle text-green-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-green-800">โพสต์ของคุณได้รับการอนุมัติแล้ว</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 14:20 (2 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 border-b border-gray-200 bg-white border-l-4 border-gray-200">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-3"><i class="fas fa-bell text-gray-500 text-xl"></i></div>
+                                        <div class="flex-1">
+                                            <p class="text-sm mb-1 text-gray-800">มีความคิดเห็นใหม่ในโพสต์ของคุณ</p>
+                                            <p class="text-xs text-gray-500">3 พ.ย. 2026 09:05 (7 ชั่วโมงที่แล้ว)</p>
+                                        </div>
+                                        <div class="flex-shrink-0 ml-2"><span class="w-2 h-2 bg-blue-500 rounded-full block"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button onclick="toggleProfile()" class="p-2 text-white hover:bg-green-600 rounded-lg transition-all duration-300 flex items-center space-x-1">
+                                <img src="img/profile/6876674e421ad.svg" alt="Profile" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white" style="object-fit: cover;">
+                                <span class="hidden md:inline text-sm">ผู้เยี่ยมชม</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                                <a href="profile.html" class="flex items-center p-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100"><i class="fas fa-user-circle mr-3 text-green-600 w-5 text-center"></i><span>โปรไฟล์</span></a>
+                                <a href="liked.html" class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-heart mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>โพสต์ที่ถูกใจ</span></a>
+                                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><span class="flex items-center p-3 text-gray-700 hover:bg-green-50 group transition-all duration-300"><i class="fas fa-plus mr-3 text-green-500 group-hover:text-green-600 w-5 text-center"></i><span>เพิ่มโพสต์</span></span></a>
+                                <a href="login.html" class="flex items-center p-3 text-red-600 hover:bg-gray-50 transition-all duration-300"><i class="fas fa-sign-out-alt mr-3 w-5 text-center"></i><span>ออกจากระบบ</span></a>
+                            </div>
+                        </div>
+                        <button class="navbar-toggler text-white hover:bg-green-600 p-2 rounded-lg transition-all duration-300 lg:hidden" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header border-b">
+            <h5 class="offcanvas-title font-semibold" id="offcanvasMenuLabel">เมนู</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="space-y-1">
+                <a href="profile.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-user-circle w-8 text-center text-lg"></i><span>โปรไฟล์ของฉัน</span></a>
+                <a href="liked.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-heart w-8 text-center text-lg"></i><span>โพสต์ที่ถูกใจ</span></a>
+                <a href="#" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-plus w-8 text-center text-lg"></i><span>เพิ่มโพสต์</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="home.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-home w-8 text-center text-lg"></i><span>หน้าหลัก</span></a>
+                <a href="share.html" class="flex items-center p-3 rounded-lg transition-all duration-200 bg-green-400 text-green-900 font-semibold"><i class="fas fa-share-alt w-8 text-center text-lg"></i><span>แบ่งปัน</span></a>
+                <a href="waste.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-trash-alt w-8 text-center text-lg"></i><span>ข้อมูลขยะ</span></a>
+                <a href="waste-classification.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-camera w-8 text-center text-lg"></i><span>สแกน</span></a>
+                <a href="locations.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-green-50 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-map-marker-alt w-8 text-center text-lg"></i><span>ศูนย์จัดการ</span></a>
+                <hr class="my-3 border-white border-opacity-20">
+                <a href="login.html" class="flex items-center p-3 rounded-lg transition-all duration-200 text-red-300 hover:bg-white hover:bg-opacity-10 hover:text-white"><i class="fas fa-sign-out-alt w-8 text-center text-lg"></i><span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Bar (เหมือน share1.php) -->
+    <div class="border-b px-3 py-4" id="filtersBar" style="margin-top: 90px;">
+        <div class="hidden lg:flex lg:flex-row lg:items-center lg:justify-between w-full">
+            <div class="flex items-center gap-4 flex-nowrap">
+                <div class="filter-item flex items-center gap-1">
+                    <span class="filter-label">ขยะ:</span>
+                    <select id="wasteTypeSelect" class="filter-chip">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="ทั่วไป">ทั่วไป</option>
+                        <option value="รีไซเคิล">รีไซเคิล</option>
+                        <option value="อันตราย">อันตราย</option>
+                    </select>
+                </div>
+                <div class="filter-item flex items-center gap-1">
+                    <span class="filter-label">วิธีการจัดการ:</span>
+                    <select id="managementTypeSelect" class="filter-chip">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="รีไซเคิล">รีไซเคิล</option>
+                        <option value="นำกลับมาใช้ใหม่">นำกลับมาใช้ใหม่</option>
+                        <option value="กำจัด">กำจัด</option>
+                    </select>
+                </div>
+                <div class="filter-item flex items-center gap-1">
+                    <span class="filter-label">จัดเรียง:</span>
+                    <div class="relative">
+                        <button class="filter-chip flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg" id="sortDropdownBtn" data-demo="การจัดเรียงเป็นเพียงตัวอย่างในเดโม">
+                            <i class="fas fa-sort text-gray-600"></i>
+                            <span id="sortLabel">ล่าสุด</span>
+                            <i class="fas fa-chevron-down text-xs ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <div class="search-bar">
+                    <div class="relative">
+                        <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาจากชื่อโพสต์/ชื่อผู้โพสต์/รายละเอียด...">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                </div>
+                <button class="green-circle" id="addPostButton" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+        <!-- Mobile -->
+        <div class="lg:hidden flex flex-col gap-3">
+            <div class="flex items-center justify-between w-full">
+                <div class="flex gap-2 flex-wrap w-full">
+                    <select id="wasteTypeSelectMobile" class="filter-chip border border-gray-300 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+                        <option value="all">ทั้งหมด</option><option value="ทั่วไป">ทั่วไป</option>
+                        <option value="รีไซเคิล">รีไซเคิล</option><option value="อันตราย">อันตราย</option>
+                    </select>
+                    <select id="managementTypeSelectMobile" class="filter-chip border border-gray-300 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+                        <option value="all">ทั้งหมด</option><option value="รีไซเคิล">รีไซเคิล</option>
+                        <option value="นำกลับมาใช้ใหม่">นำกลับมาใช้ใหม่</option><option value="กำจัด">กำจัด</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 w-full">
+                <div class="search-bar w-full">
+                    <div class="relative w-full">
+                        <input type="text" id="searchInputMobile" class="search-input w-full" placeholder="ค้นหาจากชื่อโพสต์/ชื่อผู้โพสต์/รายละเอียด...">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    </div>
+                </div>
+                <button class="green-circle" data-demo="ระบบเพิ่มโพสต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- กริดแสดงโพสต์ (mock data) -->
+    <div class="share-grid" id="wasteGrid">
+
+        <div class="share-card" data-type="ทั่วไป" data-mgmt="นำกลับมาใช้ใหม่" data-search="เปลี่ยนขยะอินทรีย์เป็นปุ๋ยหมักในบ้าน เริ่มได้ง่ายๆ มาลี">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/68766753e8e9b.svg" alt="มาลี" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">มาลี รักษ์โลก</div>
+                            <div class="text-gray-500 text-xs">4 พฤศจิกายน 2569 18:30 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">เปลี่ยนขยะอินทรีย์เป็นปุ๋ยหมักในบ้าน เริ่มได้ง่ายๆ</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะอินทรีย์</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">นำกลับมาใช้ใหม่</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/banana.jpeg" alt="เปลือกกล้วย"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button active flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">342</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">58 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-card" data-type="รีไซเคิล" data-mgmt="รีไซเคิล" data-search="ล้างขวดพลาสติกก่อนรีไซเคิล สำคัญแค่ไหน New">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/689093e868856.svg" alt="New" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">New</div>
+                            <div class="text-gray-500 text-xs">3 พฤศจิกายน 2569 20:15 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">ล้างขวดพลาสติกก่อนรีไซเคิล สำคัญแค่ไหน?</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะรีไซเคิล</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">รีไซเคิล</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/plastic.jpg" alt="ขวดพลาสติก"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">156</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">22 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-card" data-type="อันตราย" data-mgmt="กำจัด" data-search="ขยะอันตราย แบตเตอรี่และหลอดไฟ ห้ามทิ้งรวมกับขยะทั่วไป">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/689093ee2ee66.svg" alt="GreenWarrior" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">GreenWarrior</div>
+                            <div class="text-gray-500 text-xs">2 พฤศจิกายน 2569 11:45 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">ขยะอันตราย: แบตเตอรี่และหลอดไฟ ห้ามทิ้งรวมกับขยะทั่วไป</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะอันตราย</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">กำจัด</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/battery.jpeg" alt="แบตเตอรี่"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">187</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">29 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-card" data-type="อันตราย" data-mgmt="รีไซเคิล" data-search="มือถือเครื่องเก่าควรไปไหน เข้าใจขยะอิเล็กทรอนิกส์">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/689093f3926bc.svg" alt="EarthLover" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">EarthLover</div>
+                            <div class="text-gray-500 text-xs">1 พฤศจิกายน 2569 09:20 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">มือถือเครื่องเก่าควรไปไหน? เข้าใจขยะอิเล็กทรอนิกส์</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะอันตราย</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">รีไซเคิล</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/el-trash.jpg" alt="ขยะอิเล็กทรอนิกส์"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">268</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">41 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-card" data-type="รีไซเคิล" data-mgmt="รีไซเคิล" data-search="รีไซเคิลกระดาษ พับเก็บให้เล็กก่อนทิ้ง">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/68909417c749f.svg" alt="RecycleKing" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">RecycleKing</div>
+                            <div class="text-gray-500 text-xs">30 ตุลาคม 2569 15:00 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">รีไซเคิลกระดาษ: พับเก็บให้เล็กก่อนทิ้ง</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะรีไซเคิล</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">รีไซเคิล</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/paper.jpeg" alt="กระดาษ"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">98</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">15 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="share-card" data-type="รีไซเคิล" data-mgmt="รีไซเคิล" data-search="แก้วนมกับแก้วน้ำ ต่างกันยังไง">
+            <div class="share-card-content">
+                <div class="post-header">
+                    <div class="flex items-center mb-3">
+                        <img src="img/profile/689093e868856.svg" alt="GreenFan" class="w-10 h-10 rounded-full" style="object-fit: cover;">
+                        <div class="ml-3">
+                            <div class="font-bold text-sm">GreenFan</div>
+                            <div class="text-gray-500 text-xs">28 ตุลาคม 2569 08:10 น.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="post-body">
+                    <h3 class="text-lg font-semibold mb-2">แก้วนมกับแก้วน้ำ ต่างกันยังไง?</h3>
+                    <div class="waste-info mb-3">
+                        <p class="font-bold text-sm mb-1">
+                            <span class="text-gray-600">ประเภทขยะ:</span> <span class="text-green-600">ขยะรีไซเคิล</span>
+                            <span class="mx-4 text-gray-400">|</span>
+                            <span class="text-gray-600">วิธีจัดการ:</span> <span class="text-green-600">รีไซเคิล</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="img-container"><img src="img/waste/milk.jpeg" alt="แก้วนม"></div>
+                <div class="post-footer">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t">
+                        <button class="like-button flex items-center space-x-1"><i class="fas fa-heart"></i><span class="likes-count">121</span></button>
+                        <button class="comments-button" data-demo="ระบบคอมเมนต์ต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-comment"></i><span class="text-sm">19 คอมเมนต์</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-controls flex justify-center items-center gap-4 py-6">
+        <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50" data-demo="ระบบแบ่งหน้าต้องใช้ฐานข้อมูลจริง — โหมดเดโม"><i class="fas fa-chevron-left"></i> ก่อนหน้า</button>
+        <span class="current-page font-semibold text-green-700">หน้า 1</span>
+        <button class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50" data-demo="ระบบแบ่งหน้าต้องใช้ฐานข้อมูลจริง — โหมดเดโม">ถัดไป <i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script src="demo.js"></script>
+    <script>
+        // Filter + search (client-side demo)
+        (function () {
+            var cards = Array.from(document.querySelectorAll('.share-card'));
+            function apply() {
+                var wt = document.getElementById('wasteTypeSelect').value;
+                var mg = document.getElementById('managementTypeSelect').value;
+                var q = (document.getElementById('searchInput').value || '').toLowerCase();
+                cards.forEach(function (c) {
+                    var okT = wt === 'all' || c.dataset.type === wt;
+                    var okM = mg === 'all' || c.dataset.mgmt === mg;
+                    var okQ = !q || (c.dataset.search || '').toLowerCase().indexOf(q) !== -1;
+                    c.style.display = (okT && okM && okQ) ? '' : 'none';
+                });
+            }
+            ['wasteTypeSelect', 'managementTypeSelect', 'searchInput'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('input', apply), el.addEventListener('change', apply);
+            });
+            ['wasteTypeSelectMobile', 'managementTypeSelectMobile', 'searchInputMobile'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('input', apply), el.addEventListener('change', apply);
+            });
+        })();
+    </script>
+</body>
+</html>

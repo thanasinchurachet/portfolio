@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&display=swap');
+
+:root {
+  --color-brand: #10b981;
+  --color-brand-strong: #059669;
+  --color-brand-accent: #218860;
+  --color-brand-deep: #1a6d4c;
+  --color-bg: #f0f9f0;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f5f5f5;
+  --color-surface-alt: #f8f9fa;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-like-inactive: #9ca3af;
+  --color-like-active: #ef4444;
+  --font-sans: 'Kanit', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ลบเส้นใต้ลิงก์ที่ Bootstrap reboot ใส่ให้ — ให้เหมือน locations.html ทุกหน้า */
+a {
+  text-decoration: none;
+}
+
+/* ===== Share page ===== */
+#filtersBar {
+  background: #f3fbf5;
+  border-bottom: 1px solid #e5efe6;
+  padding: 12px 16px;
+}
+#filtersBar .hidden.lg\:flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 20px;
+}
+#filtersBar .filter-label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+}
+#filtersBar .filter-chip {
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  min-width: 140px;
+  font-size: 14px;
+  cursor: pointer;
+}
+#filtersBar .search-input {
+  width: 300px;
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 22px;
+  background: #fff;
+  font-size: 14px;
+}
+.green-circle {
+  background-color: #218860;
+  color: #ffffff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+  border: none;
+}
+.green-circle:hover { background-color: rgb(24, 95, 68); }
+.green-circle i { font-size: 20px; }
+
+.share-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.share-card {
+  background: var(--color-surface-soft);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.share-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+.share-card-content { padding: 1rem; }
+.img-container {
+  position: relative;
+  height: 300px;
+  background: var(--color-surface-alt);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+.img-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+.like-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+.like-button i { color: var(--color-like-inactive); transition: color 0.2s; }
+.like-button.active i { color: var(--color-like-active); }
+.like-button:hover i { transform: scale(1.1); }
+.likes-count { margin-left: 0.25rem; font-size: 0.875rem; color: var(--color-text-muted); }
+.comments-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+.comments-button:hover { color: #059669; }
+
+/* ===== Waste database page ===== */
+.method-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.method-pill:hover { background: #f3f4f6; }
+.method-pill.is-active {
+  background-color: #d1fae5;
+  border-color: #6ee7b7;
+}
+.sort-btn.active {
+  background-color: rgba(5, 150, 105, 1) !important;
+  color: #fff !important;
+}
+
+/* ===== Offcanvas menu (sidebar มือถือ) — เขียวเข้ม แคบ 300px ทุกหน้า ===== */
+.offcanvas {
+  --bs-offcanvas-width: min(300px, 85vw);
+  --bs-offcanvas-bg: #065f46;
+}
+
+.offcanvas-body {
+  color: #d1fae5;
+}
+
+.offcanvas-header {
+  border-color: rgba(255, 255, 255, .2) !important;
+  color: #fff;
+}
+
+.offcanvas .btn-close {
+  filter: invert(1);
+}
+
+/* Bootstrap .navbar มี position/padding ของตัวเองไปทับ Tailwind — ล็อกให้คงที่ทุกหน้า */
+nav.navbar {
+  position: fixed !important;
+  flex-wrap: nowrap !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* มือถือ: ลดความสูง nav และระยะขอบให้พอดี */
+@media (max-width: 640px) {
+  nav.navbar .container-fluid {
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+  nav.navbar .py-4 {
+    padding-top: .6rem;
+    padding-bottom: .6rem;
+  }
+  nav.navbar .text-xl {
+    font-size: 1.05rem;
+  }
+}
+
+/* ===== Floating chat button (demo) ===== */
+#chatFab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #059669;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, .85);
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 60;
+  transition: transform 0.2s, background 0.2s;
+}
+#chatFab:hover { background: #047857; transform: scale(1.08); }

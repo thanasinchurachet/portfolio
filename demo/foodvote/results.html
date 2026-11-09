@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <script src="js/demo-shim.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <title>ผลโหวตอาหาร</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/results.css?v=1.0.3">
+    <input type="hidden" id="liffId" value="demo">
+<script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4caf50',
+                        secondary: '#2196F3',
+                        'primary-dark': '#45a049',
+                        'primary-light': '#e8f5e9',
+                        'secondary-dark': '#1976D2',
+                    },
+                    fontFamily: {
+                        'prompt': ['Prompt', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-prompt text-gray-800">
+    <div class="container mx-auto px-4 py-4 max-w-4xl">
+        <!-- ส่วนหัว -->
+<div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <button id="back-btn" class="back-btn flex items-center text-gray-600 hover:text-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        กลับ
+    </button>
+    <div class="flex flex-col items-center justify-center flex-1">
+        <h1 class="text-xl sm:text-2xl font-semibold text-primary">ผลโหวตอาหาร</h1>
+        <div class="flex items-center justify-center gap-2">
+            <button id="prev-date-btn" class="text-gray-600 hover:text-primary transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div class="relative">
+                <p id="date-display" class="text-gray-500 text-sm cursor-pointer hover:text-primary transition-all duration-200"></p>
+                <input type="date" id="date-picker" class="absolute inset-0 opacity-0 cursor-pointer">
+            </div>
+            <button id="next-date-btn" class="text-gray-600 hover:text-primary transition-all duration-200" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="flex items-center gap-2">
+        <button id="refresh-results-btn" class="refresh-btn flex items-center text-gray-600 hover:text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            รีเฟรช
+        </button>
+    </div>
+</div>
+
+        <!-- ข้อความข้อผิดพลาด -->
+        <div id="results-error" class="bg-red-50 text-red-600 p-2 sm:p-3 rounded-lg mb-4 text-center hidden"></div>
+
+        <!-- ส่วนแสดงข้อมูลสรุป -->
+        <div class="bg-white rounded-xl shadow-md p-3 sm:p-4 mb-4 animate-fade-in">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-base sm:text-lg font-medium text-gray-800">สรุปผลโหวต</h2>
+                <a href="#" id="summary-btn" class="summary-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"></path>
+                    </svg>
+                    สรุป
+                </a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="vote-card bg-primary-light rounded-lg text-center">
+                    <p class="text-gray-600">จำนวนรายการทั้งหมด</p>
+                    <p id="total-items" class="font-semibold text-primary">0</p>
+                </div>
+                <div class="vote-card bg-primary-light rounded-lg text-center">
+                    <p class="text-gray-600">ยอดรวมทั้งหมด</p>
+                    <p id="total-cost" class="font-semibold text-primary">0 บาท</p>
+                </div>
+                <div class="vote-card bg-primary-light rounded-lg text-center relative">
+                    <p class="text-gray-600">ผู้โหวตทั้งหมด</p>
+                    <p id="total-voters" class="font-semibold text-primary">0</p>
+                    <button id="info-btn" class="absolute top-2 right-2 text-gray-500 hover:text-primary focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 22C6.477 12 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"></path>
+                        </svg>
+                    </button>
+                    <div id="info-tooltip" class="absolute top-8 right-2 bg-gray-800 text-white text-xs rounded-lg py-2 px-3 w-64 text-center z-10">
+                        หากคุณต้องการให้ผู้อื่นสามารถโหวตอาหารแทนคุณได้ กรุณาลงทะเบียนโดยการพิมพ์ "ลงทะเบียน" ในกรุ๊ปไลน์ที่มีอิ่มท้อง
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ส่วนแสดงรายการโหวตของแต่ละคน -->
+        <div class="bg-white rounded-xl shadow-md p-3 sm:p-4 animate-fade-in" style="animation-delay: 0.2s">
+            <h2 class="text-base sm:text-lg font-medium text-gray-800 mb-3">รายละเอียดการโหวต</h2>
+            <div id="voter-list" class="space-y-3">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+<!-- LIFF SDK -->
+<!-- Luxon for date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script>
+      if (typeof luxon === 'undefined') {
+        console.error('Luxon failed to load. Falling back to basic date handling.');
+        document.querySelector('#date-display').textContent = new Date().toLocaleDateString('th-TH', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+      }
+    </script>
+
+    <!-- ตรรกะของหน้าผลโหวต -->
+    <script src="js/results.js?v=1.0.4"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <script src="js/demo-shim.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>โหวตเมนูอาหาร</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4caf50',
+                        secondary: '#2196F3',
+                        'primary-dark': '#45a049',
+                        'primary-light': '#e8f5e9',
+                        'secondary-dark': '#1976D2',
+                    },
+                    fontFamily: {
+                        'prompt': ['Prompt', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-prompt text-gray-800">
+    <div class="container">
+        <!-- ส่วนหัว -->
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200 relative">
+            <div class="flex-1 text-center">
+                <h1 class="font-semibold text-primary mb-1">โหวตเมนูอาหาร</h1>
+                <div class="flex items-center justify-center gap-2">
+                    <button id="prev-date-btn" class="text-gray-600 hover:text-primary transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div class="relative">
+                        <p id="today-date" class="text-gray-500 text-sm cursor-pointer hover:text-primary transition-all duration-200"></p>
+                        <input type="date" id="date-picker" class="absolute inset-0 opacity-0 cursor-pointer">
+                    </div>
+                    <button id="next-date-btn" class="text-gray-600 hover:text-primary transition-all duration-200" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button id="refresh-btn" class="refresh-btn flex items-center text-gray-600 hover:text-primary absolute right-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                รีเฟรช
+            </button>
+        </div>
+
+        <!-- ข้อความข้อผิดพลาด -->
+        <div id="error-message" class="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-center hidden"></div>
+
+        <!-- ส่วนโปรไฟล์ -->
+        <div id="profile-section" class="bg-white rounded-xl shadow-md p-3 mb-4 flex flex-row items-center justify-between" style="display: none;">
+            <div id="profile-content" class="flex items-center gap-2">
+                <img src="" alt="User" class="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-sm">
+                <p class="font-semibold text-base text-gray-800">User</p>
+            </div>
+            <div id="greeting-message" class="hidden text-center text-primary font-medium text-sm flex-1 mx-2">สวัสดี User เลือกอาหารเลย! 😊</div>
+            <a id="results-btn" href="results.html" class="bg-primary text-white px-4 py-1.5 rounded-lg hover:bg-primary-dark transition-all duration-200 text-sm">ผลโหวต</a>
+            <script>
+                document.getElementById('results-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // ใช้ตัวแปร currentDate จาก app.js
+                    window.location.href = `results.html?date=${currentDate}`;
+                });
+            </script>
+        </div>
+
+        <!-- ส่วนหัวของเมนู -->
+        <div class="menu-container-header flex items-center justify-between mb-4">
+            <div id="already-voted" class="text-primary font-medium" style="display: none;">
+                คุณได้เลือก 0 รายการ
+            </div>
+            <div id="cost-display" class="cost-display font-medium">
+                <span class="text-base text-gray-600">ค่าใช้จ่าย:</span>
+                <span id="cost-amount" class="text-zero">0</span>
+                <span class="text-base text-gray-600">บาท</span>
+            </div>
+        </div>
+
+        <!-- การโหลดและส่วนแสดงเมนู -->
+        <div id="loading" class="text-center text-gray-500 py-3">กำลังโหลดข้อมูล...</div>
+        <div id="menu-container" class="space-y-2"></div>
+
+        <!-- ส่วนเพิ่มรายการเมนูใหม่ -->
+        <div class="mt-4">
+            <button id="add-menu-btn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark hidden">
+                เพิ่มรายการใหม่
+            </button>
+            <div id="add-menu-form" class="mt-2 hidden">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <input type="text" id="new-menu-name" class="edit-input w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="ชื่อเมนูอาหาร">
+                    <div class="flex items-center w-full border border-gray-300 rounded-lg mt-2">
+                        <div class="pl-2 pr-2 text-gray-600 font-bold text-lg">฿</div>
+                        <input type="number" id="new-menu-price" class="edit-price-input flex-1 p-2 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="ราคา (บาท)" min="0" step="1" value="20">
+                    </div>
+                    <div class="flex justify-between mt-3 gap-2">
+                        <button id="cancel-new-menu-btn" class="bg-gray-200 text-gray-600 rounded-lg flex-1 py-2 hover:bg-gray-300 transition-all">ยกเลิก</button>
+                        <button id="save-new-menu-btn" class="bg-primary text-white rounded-lg flex-1 py-2 hover:bg-primary-dark transition-all">บันทึก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-6 w-11/12 max-w-sm">
+            <h2 id="modal-title" class="text-lg font-semibold text-gray-800 mb-4"></h2>
+            <p id="modal-message" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-between gap-2">
+                <button id="modal-cancel" class="cancel-btn bg-gray-200 text-gray-600 rounded-lg flex-1 py-2">ยกเลิก</button>
+                <button id="modal-confirm" class="bg-primary text-white rounded-lg flex-1 py-2">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIFF ID -->
+    <input type="hidden" id="liffId" value="demo">
+
+    <!-- Firebase SDK -->
+<!-- LIFF SDK -->
+<!-- Luxon for date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script>
+      if (typeof luxon === 'undefined') {
+        console.error('Luxon failed to load. Falling back to basic date handling.');
+        document.querySelector('#today-date').textContent = new Date().toLocaleDateString('th-TH', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+      }
+    </script>
+
+    <!-- App logic -->
+    <script src="js/app.js?v=1.0.3"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ผลงานทั้งหมด — ธนสินธ์ ชูระเชตุ</title>
+<meta name="description" content="ผลงานทั้งหมดของ ธนสินธ์ ชูระเชตุ (Thanasin Churachet) — เว็บแอป ระบบ AI และโปรเจกต์ที่ผ่านมา">
+<meta name="theme-color" content="#33634f">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ผลงานทั้งหมด — Thanasin Churachet">
+<meta property="og:image" content="https://thanasinchurachet.github.io/portfolio/assets/ref/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4l8 20 22 2-17 14 6 22-19-12-19 12 6-22L2 26l22-2z' fill='%23f5d37a' stroke='%2333634f' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Bagel+Fat+One&family=Gaegu:wght@400;700&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=51">
+<script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+
+<header class="nav pc">
+  <div class="pc-in" data-cut="3" data-edge="b" data-seed="3">
+    <div class="wrap row">
+      <a class="logo" href="index.html" aria-label="Thanasin — กลับหน้าหลัก">Than<b>a</b>sin</a>
+      <nav class="links" id="links" aria-label="เมนูหลัก">
+        <a href="index.html#top">หน้าหลัก</a><a href="index.html#about">เกี่ยวกับ</a><a href="index.html#skills">ทักษะ</a><a href="projects.html" aria-current="page">ผลงาน</a><a href="index.html#contact">ติดต่อ</a>
+      </nav>
+      <span class="sp"></span>
+      <button class="switch" id="theme" role="switch" aria-checked="false" aria-label="สลับธีมสว่าง/มืด"><b aria-hidden="true">☀</b><b aria-hidden="true">☾</b><i></i></button>
+      <button class="burger" id="burger" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="links"><i></i><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="ph" id="top">
+    <span class="shape star float" style="right:7%;bottom:22%"></span>
+    <span class="shape leaf float" style="right:12%;top:18%;animation-delay:-2s"></span>
+    <div class="wrap">
+      <span class="hi">all works</span>
+      <h1 class="ph-title">ผลงานทั้งหมด</h1>
+      <p class="ph-sub">รวมโปรเจกต์ที่เคยทำ กดที่การ์ดเพื่อดูรายละเอียดและเดโม <span id="proj-count"></span></p>
+      <a class="btn alt pc" href="index.html#works"><span class="pc-in" data-cut="2" data-seed="8">← กลับหน้าหลัก</span></a>
+    </div>
+  </section>
+
+  <div class="sheet pc up" id="projects-sheet" style="margin-top:-50px">
+  <div class="pc-in" data-cut="12" data-edge="t" data-seed="41" style="padding-bottom:70px">
+    <div class="wrap" id="projects">
+      <div class="works" data-paged></div>
+      <nav class="pager" id="pager" aria-label="เปลี่ยนหน้าผลงาน" hidden></nav>
+    </div>
+  </div></div>
+</main>
+
+<footer class="pfoot">made with paper, code &amp; a lot of coffee ☕</footer>
+
+<dialog id="proj" class="proj-dlg" aria-labelledby="pd-title">
+  <div class="pd pc lift"><div class="pc-in pd-in" data-cut="4" data-seed="31">
+    <button class="pd-x" type="button" aria-label="ปิด" data-close>✕</button>
+    <header class="pd-head"><span class="ctx" id="pd-ctx"></span><h2 id="pd-title"></h2><p id="pd-desc"></p><div class="pd-tools" id="pd-tools"></div></header>
+    <div class="pd-body">
+      <div class="pd-frame" id="pd-frame"><div class="win-top"><i></i><i></i><i></i><span class="url" id="pd-url"></span></div><div class="pd-view"><div class="pd-load" id="pd-load">กำลังโหลดเดโม…</div><iframe id="pd-iframe" title="เดโมโปรเจค" loading="lazy" referrerpolicy="no-referrer"></iframe></div></div>
+      <ul class="pd-feats" id="pd-feats"></ul>
+    </div>
+    <footer class="pd-foot">
+      <a class="pd-btn go" id="pd-tab" href="#" target="_blank" rel="noopener">↗ เปิดเดโมในแท็บใหม่</a>
+      <button class="pd-btn ghost" type="button" data-close>ปิด</button>
+    </footer>
+  </div></div>
+</dialog>
+
+<script src="data/content.js?v=42"></script>
+<script src="data/chat.js?v=9"></script>
+<script src="js/site.js?v=51"></script>
+</body>
+</html>

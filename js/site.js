@@ -137,7 +137,9 @@
   function loader() {
     var el = $("#loader"), fill = $("#ld-fill"), root = document.documentElement;
     if (!el) { root.classList.remove("loading"); root.classList.add("ready"); return; }
-    var st = { fonts: 0, load: document.readyState === "complete" ? 1 : 0, model: window.__hero3d ? 1 : 0 }, done = false, shown = 5;
+    // the page is shown only when BOTH paper characters (standing + seated) are decoded and drawn (or failed), so they never pop in late
+    var chars = function () { var a = window.__paperAvatars || {}, ok = function (k) { return a[k] && (a[k].status === "ready" || a[k].status === "failed"); }; return ok("standing") && ok("seated"); };
+    var st = { fonts: 0, load: document.readyState === "complete" ? 1 : 0, model: chars() ? 1 : 0 }, done = false, shown = 5;
     function target() { return 15 + st.fonts * 25 + st.load * 25 + st.model * 35; }
     function finish() {
       if (done) return; done = true; clearInterval(tick); fill.style.width = "100%";
@@ -146,9 +148,9 @@
     function check() { if (st.fonts && st.load && st.model) finish(); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { st.fonts = 1; check(); }); else st.fonts = 1;
     if (!st.load) addEventListener("load", function () { st.load = 1; check(); });
-    if (!st.model) addEventListener("hero3d:done", function () { st.model = 1; check(); });
+    if (!st.model) { var poll = setInterval(function () { if (chars()) { st.model = 1; clearInterval(poll); check(); } }, 100); setTimeout(function () { clearInterval(poll); }, 15000); }
     var tick = setInterval(function () { shown += (Math.min(target(), 96) - shown) * 0.12 + 0.15; fill.style.width = shown.toFixed(1) + "%"; }, 90);
-    setTimeout(finish, 9000);                                           // never keep the visitor waiting
+    setTimeout(finish, 14000);                                          // never keep the visitor waiting (slow connections)
     check();
   }
 

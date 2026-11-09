@@ -159,6 +159,8 @@
     .hud, body.free .hud { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; height: 54%; transform: translateY(calc(100% + 24px)); } .hud.on { transform: none; }
     .shot { height: 108px; } .stage.hudon .cap { bottom: calc(54% + 16px); }
     .panel, body.free .panel { left: 8px; right: 8px; width: auto; top: auto; bottom: 8px; height: 62%; transform: translateY(calc(100% + 24px)); }
+    .stage.hudon .ptab, body.free .stage.hudon .visit { display: none; }   /* the camera panel covers the bottom edge while a visitor is being scanned */
+    .panel.on, body.free .panel.on, .hud.on, body.free .hud.on { transform: none; }   /* "free" mode used to win on specificity, so the panel never slid in on a phone */
     .ptab { left: 8px; top: auto; bottom: 8px; } .visit { right: 8px; bottom: 8px; }
   }
 </style>
@@ -629,6 +631,7 @@
   async function freeVisit() {
     if (visitBusy || !document.body.classList.contains("free")) return; visitBusy = true; $("#visitBtn").disabled = true; var tok = T.token;
     try {
+      if (innerWidth <= 760) panel.classList.remove("on");            // on a phone the admin panel and the camera panel share the bottom edge
       if (!atDock()) { S.patrol = []; robotTo(DOCK, "moving", R.reception); await until(atDock); }
       var list = [VISITORS.tonkla, VISITORS.baitoey, VISITORS.guest], v = list[Math.floor(Math.random() * 3)];
       people = people.filter(function (q) { if (q.v && q.v.id === v.id) { q.g.remove(); return false; } return true; });

@@ -175,18 +175,21 @@
      and it keeps swinging with the speed you let go with ---------- */
   function swing() {
     var tags = $$(".hang"); if (!tags.length) return;
-    var K = 10, W0 = Math.sqrt(K), C0 = 0.9, AMP = reduce ? 0.016 : 0.028, items = [];
+    var scrollOnly = matchMedia("(hover: none), (pointer: coarse), (max-width: 800px)");
+    var K = 10, W0 = Math.sqrt(K), C0 = 0.9, AMP = reduce ? 0.016 : 0.028, mobileAmp = reduce ? 0.004 : 0.008, items = [];
     tags.forEach(function (h, i) {
       var sw = document.createElement("div"); sw.className = "swing";
       while (h.firstChild) sw.appendChild(h.firstChild);
       h.appendChild(sw);
-      var s = { h: h, sw: sw, th: 0, w: 0, ph: i * 1.37, hover: false, lock: false, drag: false, off: 0, lastTh: 0, lastT: 0, pivot: null };
-      s.th = (Math.random() - 0.5) * 0.04;
+      var s = { h: h, sw: sw, th: 0, w: 0, ph: i * 1.37, hover: false, lock: false, drag: false, off: 0, lastTh: 0, lastT: 0, pointerId: null };
+      s.th = (Math.random() - 0.5) * (scrollOnly.matches ? 0.012 : 0.04);
       var ang = function (e) { var r = h.getBoundingClientRect(); return Math.atan2(-(e.clientX - (r.left + r.width / 2)), e.clientY - (r.top - 40)); };
-      h.addEventListener("pointerenter", function (e) { if (e.pointerType !== "touch") s.hover = true; });
+      h.addEventListener("pointerenter", function (e) { if (!scrollOnly.matches && e.pointerType !== "touch") s.hover = true; });
       h.addEventListener("pointerleave", function () { s.hover = false; if (!s.drag) s.lock = false; });
       h.addEventListener("pointerdown", function (e) {
-        if (e.button > 0) return;
+        // Let native touch scrolling start without capture or preventDefault.
+        if (e.button > 0 || e.pointerType === "touch" || scrollOnly.matches) return;
+        s.pointerId = e.pointerId;
         s.drag = true; s.lock = true; s.off = s.th - ang(e); s.lastTh = s.th; s.lastT = performance.now(); s.w = 0;
         try { h.setPointerCapture(e.pointerId); } catch (x) {}
         h.classList.add("grabbing"); e.preventDefault();
@@ -202,24 +205,34 @@
         if (performance.now() - s.lastT > 90) s.w = 0;                          // you stopped before letting go
         s.w = Math.max(-6, Math.min(6, s.w));
         try { h.releasePointerCapture(e.pointerId); } catch (x) {}
+        s.pointerId = null;
       };
       h.addEventListener("pointerup", up); h.addEventListener("pointercancel", up);
       h.addEventListener("dragstart", function (e) { e.preventDefault(); });
       items.push(s);
+    });
+    scrollOnly.addEventListener("change", function () {
+      if (!scrollOnly.matches) return;
+      items.forEach(function (s) {
+        if (s.pointerId !== null) { try { s.h.releasePointerCapture(s.pointerId); } catch (x) {} }
+        s.pointerId = null; s.drag = false; s.lock = false; s.hover = false; s.w = 0;
+        s.th = Math.max(-0.012, Math.min(0.012, s.th)); s.h.classList.remove("grabbing");
+      });
     });
     var visible = false, last = 0, t = 0;
     new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { rootMargin: "100px" }).observe($(".tags"));
     function frame(now) {
       requestAnimationFrame(frame);
       if (!visible) { last = now; return; }
-      var dt = Math.min((now - (last || now)) / 1000, 0.05); last = now; t += dt;
+      var dt = Math.min((now - (last || now)) / 1000, 0.05), mobile = scrollOnly.matches; last = now; t += dt;
       items.forEach(function (s) {
         if (s.drag) { s.sw.style.transform = "rotate(" + s.th.toFixed(4) + "rad)"; return; }
-        var calm = s.hover && !s.lock, c = calm ? 6.4 : C0, drive = calm ? 0 : AMP * C0 * W0 * Math.sin(t * W0 + s.ph);
+        var calm = !mobile && s.hover && !s.lock, c = calm ? 6.4 : C0, drive = calm ? 0 : (mobile ? mobileAmp : AMP) * C0 * W0 * Math.sin(t * W0 + s.ph);
         for (var k = 0; k < 2; k++) {                                          // two sub-steps for stability
           var a = -K * Math.sin(s.th) - c * s.w + drive; s.w += a * dt / 2; s.th += s.w * dt / 2;
         }
-        if (s.th > 1.3) { s.th = 1.3; s.w *= -0.35; } else if (s.th < -1.3) { s.th = -1.3; s.w *= -0.35; }
+        var limit = mobile ? 0.012 : 1.3;
+        if (s.th > limit) { s.th = limit; s.w *= -0.35; } else if (s.th < -limit) { s.th = -limit; s.w *= -0.35; }
         s.sw.style.transform = "rotate(" + s.th.toFixed(4) + "rad)";
       });
     }

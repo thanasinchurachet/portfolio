@@ -526,6 +526,9 @@ html.loading { overflow: hidden; }
 .hang .swing::before { content: ""; position: absolute; left: 50%; top: -46px; height: 54px; width: 2px; background: var(--brown); transform: translateX(-50%); }
 .hang.grabbing, .hang.grabbing * { cursor: grabbing !important; }
 .hang .lg { cursor: inherit; }
+@media (hover: none), (pointer: coarse), (max-width: 800px) {
+  .hang, .hang .lg { cursor: default; }
+}
 
 /* demo modal: no tool chips, and the page inside is shown at 72% so the whole upload card is visible at a glance */
 .proj-dlg.hasdemo .pd-tools { display: none; }

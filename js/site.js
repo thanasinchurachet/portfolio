@@ -441,34 +441,56 @@
   // ---- paper-cut trash sprites (rendered in Blender: blender/build_trash.py -> assets/trash/*.png) ----
   // inner = lying in the card (clipped by the paper edge), outer = peeking from behind the card; on hover everything jumps outwards.
   // s: css position, w: width px, r: resting rotation, h: [dx, dy, rotation] on hover, d: delay
-  var TRASH = {
-    inner: [
-      { n: "bag",     w: 54, r: -8,  s: { right: 188, top: 42 }, h: [-12, -4, -18], d: .22 },
-      { n: "paper",   w: 48, r: -14, s: { right: 150, top: 6 },  h: [-8, 6, -30],   d: 0 },
-      { n: "can",     w: 38, r: -10, s: { right: 104, top: 8 },  h: [2, -6, 12],    d: .04 },
-      { n: "glass",   w: 32, r: 14,  s: { right: 60,  top: 10 }, h: [6, -4, 26],     d: .08 },
-      { n: "bottle",  w: 34, r: 18,  s: { right: 108, top: 52 }, h: [-8, 6, -20],   d: .12 },
-      { n: "carton",  w: 36, r: 8,   s: { right: 64,  top: 58 }, h: [6, 6, 20],     d: .16 },
-      { n: "banana",  w: 38, r: -22, s: { right: 12,  top: 12 }, h: [8, 8, -34],    d: .2 },
-      { n: "battery", w: 28, r: 16,  s: { right: 20,  top: 56 }, h: [6, 4, 30],     d: .26 }
-    ],
-    outer: []
+  // sprite sets for the cards: data-fx on a card picks one (set in data/content.js as  fx: "trash" | "food" | "robot")
+  var FX = {
+    trash: {
+      src: function (n) { return "assets/trash/" + n + ".png?v=1"; },
+      inner: [
+        { n: "bag",     w: 54, r: -8,  s: { right: 188, top: 42 }, h: [-12, -4, -18], d: .22 },
+        { n: "paper",   w: 48, r: -14, s: { right: 150, top: 6 },  h: [-8, 6, -30],   d: 0 },
+        { n: "can",     w: 38, r: -10, s: { right: 104, top: 8 },  h: [2, -6, 12],    d: .04 },
+        { n: "glass",   w: 32, r: 14,  s: { right: 60,  top: 10 }, h: [6, -4, 26],     d: .08 },
+        { n: "bottle",  w: 34, r: 18,  s: { right: 108, top: 52 }, h: [-8, 6, -20],   d: .12 },
+        { n: "carton",  w: 36, r: 8,   s: { right: 64,  top: 58 }, h: [6, 6, 20],     d: .16 },
+        { n: "banana",  w: 38, r: -22, s: { right: 12,  top: 12 }, h: [8, 8, -34],    d: .2 },
+        { n: "battery", w: 28, r: 16,  s: { right: 20,  top: 56 }, h: [6, 4, 30],     d: .26 }
+      ]
+    },
+    food: {                                                        // Food Vote: the lunch menu dishes
+      src: function (n) { return "assets/fx/" + n + ".webp"; },
+      inner: [
+        { n: "kaprao",     w: 70, r: -8,  s: { right: 186, top: 40 }, h: [-12, -2, -16], d: .2 },
+        { n: "khaomankai", w: 66, r: 6,   s: { right: 116, top: 4 },  h: [-4, -6, 18],   d: 0 },
+        { n: "noodle",     w: 54, r: -10, s: { right: 52,  top: 6 },  h: [4, -6, -20],   d: .06 },
+        { n: "padsiew",    w: 64, r: 10,  s: { right: 106, top: 50 }, h: [-6, 6, 20],    d: .12 },
+        { n: "plate",      w: 58, r: -6,  s: { right: 14,  top: 52 }, h: [8, 6, -22],    d: .18 }
+      ]
+    },
+    robot: {                                                       // Face Recognition: the robot, a scan frame, a smiling face, gear, stars
+      src: function (n) { return "assets/fx/" + n + (n === "robot" ? ".webp" : ".svg") + "?v=2"; },
+      inner: [
+        { n: "face",  w: 44, r: 10,  s: { right: 150, top: 4 },  h: [-6, -6, 22],   d: 0 },
+        { n: "robot", w: 74, r: -4,  s: { right: 54,  top: 6 },  h: [2, -8, 12],    d: .08 },
+        { n: "scan",  w: 50, r: -6,  s: { right: 104, top: 62 }, h: [-8, 4, -18],   d: .2 },
+        { n: "gear",  w: 34, r: 14,  s: { right: 160, top: 64 }, h: [-6, 6, 30],    d: .14 },
+        { n: "star",  w: 30, r: -12, s: { right: 22,  top: 70 }, h: [8, 6, -30],    d: .2 },
+        { n: "star",  w: 20, r: 18,  s: { right: 12,  top: 4 },  h: [6, -6, 24],    d: .26 }
+      ]
+    }
   };
-  function sprite(it) {
+  function sprite(it, set) {
     var s = document.createElement("span"); s.className = "tr";
     s.style.width = it.w + "px"; s.style.setProperty("--r", it.r + "deg");
     s.style.setProperty("--hx", it.h[0] + "px"); s.style.setProperty("--hy", it.h[1] + "px"); s.style.setProperty("--hr", (it.r + it.h[2]) + "deg"); s.style.setProperty("--d", it.d + "s");
     for (var k in it.s) s.style[k] = it.s[k] + "px";
-    var im = new Image(); im.src = "assets/trash/" + it.n + ".png?v=1"; im.alt = ""; im.decoding = "async"; im.loading = "lazy"; im.draggable = false; s.appendChild(im);
+    var im = new Image(); im.src = set.src(it.n); im.alt = ""; im.decoding = "async"; im.loading = "lazy"; im.draggable = false; s.appendChild(im);
     return s;
   }
-  function addTrash(card) {
+  function addFx(card) {
+    var set = FX[card.getAttribute("data-fx")]; if (!set) return;
     var inner = document.createElement("span"); inner.className = "tr-layer"; inner.setAttribute("aria-hidden", "true");
-    TRASH.inner.forEach(function (it) { inner.appendChild(sprite(it)); });
+    set.inner.forEach(function (it) { inner.appendChild(sprite(it, set)); });
     var pin = card.querySelector(".pc-in"); if (pin) pin.insertBefore(inner, pin.firstChild);
-    var outer = document.createElement("span"); outer.className = "tr-outer"; outer.setAttribute("aria-hidden", "true");
-    TRASH.outer.forEach(function (it) { outer.appendChild(sprite(it)); });
-    card.insertBefore(outer, card.firstChild);
   }
 
 
@@ -504,7 +526,7 @@
       var p = PROJECTS[+c.dataset.p], box = c.querySelector("[data-tools]"); if (!p || !box) return;
       box.textContent = ""; p.tools.forEach(function (t) { box.appendChild(chip(t)); });
     });
-    document.querySelectorAll('.work[data-fx="trash"]').forEach(addTrash);
+    document.querySelectorAll('.work[data-fx]').forEach(addFx);
     cards.forEach(tilt);
     document.querySelectorAll(".stop > .pc").forEach(tilt);                                          // journey cards tilt too
     if (!dlg || typeof dlg.showModal !== "function") return;            // old browser: the cards just link to projects.html

@@ -9,7 +9,7 @@
    • Demo        : `demo` = path or URL shown in the popup iframe (the page must allow being embedded), or null for details only.
    • more        : the fold-out "รายละเอียดโปรเจค" in the popup — { summary, role?, steps: [..], note?, gallery: [{ src, cap, tall? }] }
                    (all optional; `feats`, `tools` and `video` are shown inside it too)
-   • fx: "trash" : makes little paper-cut trash fly around the card (BinBuddy). Leave it out for a normal card.
+   • fx: "trash" | "food" | "robot" : little paper-cut pieces that decorate the top of the card and jump on hover. Leave it out for a normal card.
    Keep the quotes and commas as they are. Save, refresh the page.
    ============================================================================================ */
 window.CONTENT = {
@@ -53,7 +53,7 @@ window.CONTENT = {
       }
     },
     {
-      id: "foodvote",
+      id: "foodvote", fx: "food",
       card: { ctx: "ฝึกงาน · Logicton", title: "Food Vote System", color: "#f9df97", hint: "ดูเดโม ▶", label: "Food Vote System — ดูรายละเอียด",
               text: "โหวตเมนูอาหารพร้อมคำนวณราคา มี LINE Bot แจ้งเตือน และ AI ผ่าน n8n ช่วยแยกรายการ" },
       title: "Food Vote System — ระบบโหวตอาหาร", ctx: "โครงงานฝึกงาน · Logicton Co., LTD",
@@ -89,7 +89,7 @@ window.CONTENT = {
       }
     },
     {
-      id: "facerecog",
+      id: "facerecog", fx: "robot",
       card: { ctx: "ฝึกงาน · depa", title: "Face Recognition", color: "#f8c9c4", hint: "ดูเดโม ▶", label: "Face Recognition — เปิดเดโม",
               text: "จดจำใบหน้า แสดง Event และสั่งหุ่นยนต์แบบ Realtime พร้อมหลังบ้านตั้งค่าระบบ" },
       title: "Face Recognition — ระบบตรวจจับใบหน้า & ควบคุมหุ่นยนต์", ctx: "โครงงานฝึกงาน · depa",

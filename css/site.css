@@ -21,7 +21,7 @@
   --tile-ink: #1b2d25; --shadow: 0, 0, 0; --cream: #f5e4cc;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: hidden; overscroll-behavior-x: none; }   /* on the root, hidden is propagated to the viewport (no side panning in in-app browsers like Instagram's) and does not break the sticky nav */
 body { font-family: var(--f-body); background: var(--page); color: var(--text); line-height: 1.7; overflow-x: hidden; transition: background .5s, color .5s; }
 img { display: block; max-width: 100%; }
 a { color: inherit; }
@@ -846,3 +846,9 @@ body { overflow-x: clip; }   /* clip, not hidden: hidden turns body into a scrol
 @keyframes dio-fly { 0%, 100% { translate: 0 0; rotate: -6deg; } 25% { translate: -60px -30px; rotate: 8deg; } 50% { translate: -20px -70px; rotate: -4deg; } 75% { translate: 30px -26px; rotate: 6deg; } }
 /* the star stickers stay in front of the paper tunnel */
 .stage-card.has-dio .star1, .stage-card.has-dio .star2 { z-index: 1; }
+
+/* phones: nothing may be wider than the screen (the cards' hills and the cat are allowed to overshoot only inside a clipped box) */
+@media (max-width: 760px) {
+  html, body { max-width: 100%; }
+  .hill { left: 0; right: 0; }
+}

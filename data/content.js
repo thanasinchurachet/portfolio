@@ -155,7 +155,7 @@ window.CONTENT = {
   contact: {
     eyebrow: "let’s talk",
     title: "สนใจติดต่อได้ช่องทางนี้เลย",
-    text: "ออยากคุยเรื่องงานหรือเริ่องส่วนตัวทักมาคุยกันได้เลย",
+    text: "อยากคุยเรื่องงานหรือเริ่องส่วนตัวทักมาคุยกันได้เลย",
     email: "thanasinchurachet@gmail.com",
     phone: { text: "063-963-2000", href: "+66639632000" },
     social: [                                    // type: "facebook" | "instagram" | anything else (gets a link icon)
